@@ -49,6 +49,19 @@ def call(config) {
                 sh "docker rmi ${unique_Id}"
             }
         }
+    } else if (config.buildType == 'webpack') {
+        stage('Webpack Build') {
+            try {
+                sh "docker build -f ${config.test} . -t ${unique_Id}"
+                sh "docker run --name ${unique_Id} ${unique_Id} npm test"
+                sh "docker cp \$(docker ps -aqf \"name=${unique_Id}\"):/usr/webapp/tests/junit ."
+            } finally {
+                junit 'junit/**/*.xml'
+
+                sh "docker rm -f ${unique_Id}"
+                sh "docker rmi ${unique_Id}"
+            }
+        }
     } else {
         throw new Exception('Invalid build type specified')
     }

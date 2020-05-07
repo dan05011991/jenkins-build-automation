@@ -105,6 +105,39 @@ class IntegrationTests extends BasePipelineTest {
     }
 
     @Test
+    void should_execute_pipeline_successfully_and_follow_webpack_route() throws Exception {
+        //Arrange
+        binding.setVariable("BRANCH_NAME", "feature/test")
+        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
+
+        //Act
+        runScript(pipeline).call(
+                gitflow: new Gitflow(
+                        script: this,
+                        branch: "develop",
+                        is_pull_request: false
+                ),
+                buildType: 'webpack',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile'
+        )
+
+        //Assert
+        assertStringArray([
+                '   integration_test.run()',
+                '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=webpack, imageName=example_image_name, test=test.dockerfile})',
+                '      integration_test.stage(Webpack Build, groovy.lang.Closure)',
+                '         integration_test.sh(docker build -f test.dockerfile . -t efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker run --name efe28da0-24ed-4253-a351-467f7587cb71 efe28da0-24ed-4253-a351-467f7587cb71 npm test)',
+                '         integration_test.sh(docker cp $(docker ps -aqf "name=efe28da0-24ed-4253-a351-467f7587cb71"):/usr/webapp/tests/junit .)',
+                '         integration_test.junit(junit/**/*.xml)',
+                '         integration_test.sh(docker rm -f efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker rmi efe28da0-24ed-4253-a351-467f7587cb71)'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
     void should_execute_pipeline_successfully_and_follow_master_route() throws Exception {
         //Arrange
         binding.setVariable("BRANCH_NAME", "feature/test")

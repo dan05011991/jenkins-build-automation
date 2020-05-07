@@ -20,7 +20,7 @@ def call(config) {
                 sh 'git add pom.xml'
                 sh 'git commit -m "[Automated commit: Project released]"'
             }
-        } else if (config.buildType == 'gulp') {
+        } else if (config.buildType == 'gulp' || config.buildType == 'webpack') {
             stage('Gulp Version Update') {
 
                 ui_version = sh(
