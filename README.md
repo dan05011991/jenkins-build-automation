@@ -10,7 +10,7 @@ Issues with current end to end build process:
 ## Pre-setup repositories
 - https://github.com/dan05011991/virtualbox_jenkins_home - This is the standard data store for jenkins.
 It is backed up in git.
-- https://github.com/dan05011991/jenkins-libraries - jenkins pipelines
+- https://github.com/dan05011991/jenkins-build-automation - jenkins pipelines
 
 ## Installation
 
