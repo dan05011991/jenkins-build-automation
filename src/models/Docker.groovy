@@ -10,12 +10,6 @@ class Docker {
     }
 
     def doesDockerImageExist(image) {
-        script.sh("""
-            if [ ! -z "\$(docker images -q ${image} 2> /dev/null)" ]; then 
-                docker rmi $image
-            fi
-        """)
-
         def result = script.sh(script: """
             if [ "\$(docker pull ${image})" ]; then 
                 echo "yes"; 
