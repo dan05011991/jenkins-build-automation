@@ -153,14 +153,14 @@ class IntegrationTests extends BasePipelineTest {
                         is_pull_request: false
                 ),
                 buildType: 'gulp',
-                imageName: 'example_image_name:',
+                imageName: 'example_image_name',
                 test: 'test.dockerfile'
         )
 
         //Assert
         assertStringArray([
                 '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@263f04ca, buildType=gulp, imageName=example_image_name:, test=test.dockerfile})',
+                '   integration_test.call({gitflow=models.Gitflow@263f04ca, buildType=gulp, imageName=example_image_name, test=test.dockerfile})',
                 '      integration_test.stage(Gulp Build, groovy.lang.Closure)',
                 '         integration_test.sh(docker build -f test.dockerfile . -t 8027a88d-134d-410a-8c35-40a7e9798fbb)',
                 '         integration_test.sh(docker run --name 8027a88d-134d-410a-8c35-40a7e9798fbb 8027a88d-134d-410a-8c35-40a7e9798fbb ./node_modules/gulp/bin/gulp test)',
@@ -170,7 +170,6 @@ class IntegrationTests extends BasePipelineTest {
                 '         integration_test.sh(docker rmi 8027a88d-134d-410a-8c35-40a7e9798fbb)',
                 '      integration_test.stage(Re-tag Docker Image, groovy.lang.Closure)',
                 '         integration_test.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
-                '         integration_test.sh(\n            if [ ! -z "$(docker images -q example_image_name:EXAMPLE_TAG 2> /dev/null)" ]; then \n                docker rmi example_image_name:EXAMPLE_TAG\n            fi\n        )',
                 '         integration_test.sh({script=\n            if [ "$(docker pull example_image_name:EXAMPLE_TAG)" ]; then \n                echo "yes"; \n            fi\n        , returnStdout=true})',
                 '         integration_test.sh(docker pull example_image_name:EXAMPLE_TAG-release-candidate)',
                 '         integration_test.sh(docker tag example_image_name:EXAMPLE_TAG-release-candidate example_image_name:EXAMPLE_TAG)',

@@ -76,13 +76,13 @@ def call(config) {
 
             docker_version = docker_helper.getDockerTag(project_version)
 
-            if (!docker_helper.doesDockerImageExist(config.imageName + docker_version)) {
+            if (!docker_helper.doesDockerImageExist(config.imageName + ":" + docker_version)) {
                 referenceTag = docker_helper.getReferenceTag(project_version)
-                sh "docker pull ${config.imageName}${referenceTag}"
-                sh "docker tag ${config.imageName}${referenceTag} ${config.imageName}${docker_version}"
+                sh "docker pull ${config.imageName}:${referenceTag}"
+                sh "docker tag ${config.imageName}:${referenceTag} ${config.imageName}:${docker_version}"
 
                 withDockerRegistry([credentialsId: "dockerhub", url: ""]) {
-                    sh "docker push ${config.imageName}${docker_version}"
+                    sh "docker push ${config.imageName}:${docker_version}"
                 }
             }
         }
