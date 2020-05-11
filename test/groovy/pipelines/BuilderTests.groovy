@@ -125,6 +125,49 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
+    void should_execute_pipeline_successfully_deploy() {
+        //Arrange
+        binding.setVariable("BRANCH_NAME", "master")
+        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
+        helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
+
+        //Act
+        runScript(pipeline).call(
+                buildType: 'maven',
+                deploymentRepo: 'example_url',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                projectKey: 'example_key',
+                autoDeploy: true
+        )
+
+        //Assert
+        assertStringArray([
+                '   builder.run()',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, projectKey=example_key, autoDeploy=true})',
+                '      builder.node(groovy.lang.Closure)',
+                '         builder.disableConcurrentBuilds()',
+                '         builder.properties([null])',
+                '         builder.stage(Clean, groovy.lang.Closure)',
+                '            builder.cleanWs()',
+                '               builder.echo(Workspace cleaned)',
+                '            builder.echo(Source branch: master)',
+                '            builder.echo(Source Url: [test])',
+                '            builder.echo(Is Pull Request?: false)',
+                '         builder.stage(Pipeline setup, groovy.lang.Closure)',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
+                '               builder.echo(Parallel job)',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@1df98368})',
+                '            builder.echo(Integration pipeline called)',
+                '         builder.sh({script=git describe --tags | sed -n -e \"s/\\([0-9]\\)-.*/\\1/ p\", returnStdout=true})',
+                '         builder.string({name=Image, value=example_image_name})',
+                '         builder.string({name=Tag, value=this is not a bump})',
+                '         builder.build({job=Deploy, parameters=[null, null], propagate=true, wait=true})'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
     void should_execute_pipeline_successfully_and_follow_pull_request_route_for_release_branch() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "PR-13")

@@ -65,7 +65,22 @@ def call(Map config=[:], Closure body={}) {
                     test: config.test,
                     gitflow: gitflow
             )
+        }
 
+        if(gitflow.isMasterBranch() && config.autoDeploy) {
+            gitTag = sh([
+                    script      : 'git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p"',
+                    returnStdout: true
+            ]).trim()
+
+            build(
+                job: 'Deploy',
+                parameters: [
+                        string(name: 'Image', value: "${config.imageName}"),
+                        string(name: 'Tag', value: "${gitTag}")
+                ],
+                propagate: true,
+                wait: true)
         }
 
         body()
