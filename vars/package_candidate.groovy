@@ -29,9 +29,9 @@ def call(config) {
                 )
 
                 sh("""
-                                #!/bin/bash
-                                sed -i "s/appVersion: '${ui_version}'/appVersion: '${project_version}'/g" conf/config-release.js
-                            """)
+                    #!/bin/bash
+                    sed -i "s/appVersion: '${ui_version}'/appVersion: '${project_version}'/g" conf/config-release.js
+                """)
 
                 sh 'git add conf/config-release.js'
                 sh 'git commit -m "[Automated commit: Project released]"'
@@ -46,7 +46,7 @@ def call(config) {
 
                 sh("""
                     #!/bin/bash
-                    sed -i "s/version: \"${ui_version}\"/version: \"${project_version}\"/g" package.json
+                    sed -i 's/\"version\": \"${ui_version}\"/\"version\": \"${project_version}\"/g' package.json
                 """)
 
                 sh 'git add package.json'
