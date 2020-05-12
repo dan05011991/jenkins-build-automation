@@ -40,7 +40,7 @@ def call(config) {
             stage('Webpack Version Update') {
 
                 ui_version = sh(
-                    script: "sed -n \"s/^.*version.*\"\\(.*\\)\".*\$/\\1/ p\" package.json | tr -d '\\n'",
+                    script: "sed -n \"s/^.*version.*\\\"\\(.*\\)\\\".*\$/\\1/ p\" package.json | tr -d '\\n'",
                     returnStdout: true
                 )
 
