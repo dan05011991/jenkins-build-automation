@@ -36,6 +36,22 @@ def call(config) {
                 sh 'git add conf/config-release.js'
                 sh 'git commit -m "[Automated commit: Project released]"'
             }
+        } else if (config.buildType == 'webpack') {
+            stage('Webpack Version Update') {
+
+                ui_version = sh(
+                    script: "sed -n \"s/^.*version.*\"\\(.*\\)\".*\$/\\1/ p\" package.json | tr -d '\\n'",
+                    returnStdout: true
+                )
+
+                sh("""
+                    #!/bin/bash
+                    sed -i "s/version: \"${ui_version}\"/version: \"${project_version}\"/g" package.json
+                """)
+
+                sh 'git add package.json'
+                sh 'git commit -m "[Automated commit: Project released]"'
+            }
         }
     }
 
