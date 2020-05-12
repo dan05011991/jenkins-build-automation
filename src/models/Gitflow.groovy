@@ -67,6 +67,10 @@ class Gitflow {
         if(branch.startsWith('release/') || branch.startsWith('hotfix/')) {
             return 'master'
         }
+        if(branch.startsWith('feature/')) {
+            return 'develop'
+        }
+        
         def branch = script.sh(
                 script: "./get_parent_branch.sh",
                 returnStdout: true).trim()
