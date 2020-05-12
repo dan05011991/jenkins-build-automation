@@ -6,5 +6,4 @@ git show-branch \
 | grep -v "$(git rev-parse --abbrev-ref HEAD)" \
 | head -n1 \
 | sed "s/^.*\[//" \
-| grep 'release\/' \
 | sed "s/\^.*//"
