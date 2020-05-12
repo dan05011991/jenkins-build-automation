@@ -18,7 +18,7 @@ def call(config) {
             stage('Maven Version Update') {
                 sh "mvn versions:set -DnewVersion=${project_version}"
                 sh 'git add pom.xml'
-                sh 'git commit -m "[Automated commit: Project released]"'
+                sh 'git commit -m "[Automated commit: version bump]"'
             }
         } else if (config.buildType == 'gulp') {
             stage('Gulp Version Update') {
@@ -34,7 +34,7 @@ def call(config) {
                 """)
 
                 sh 'git add conf/config-release.js'
-                sh 'git commit -m "[Automated commit: Project released]"'
+                sh 'git commit -m "[Automated commit: version bump]"'
             }
         } else if (config.buildType == 'webpack') {
             stage('Webpack Version Update') {
@@ -50,7 +50,7 @@ def call(config) {
                 """)
 
                 sh 'git add package.json'
-                sh 'git commit -m "[Automated commit: Project released]"'
+                sh 'git commit -m "[Automated commit: version bump]"'
             }
         }
     }
