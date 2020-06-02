@@ -16,10 +16,11 @@ def call(config) {
 
         if (config.buildType == 'maven') {
             stage('Maven Version Update') {
-                docker {
-                    image 'maven:3-alpine' 
-                    args '-v /root/.m2:/root/.m2' 
+                //docker.image('maven:3-alpine').inside('-v $HOME/.m2:/root/.m2') {
+                docker.image('maven:3-alpine') {
+                    sh 'mvn --version'
                 }
+                
                 sh "mvn versions:set -DnewVersion=${project_version}"
                 sh 'git add pom.xml'
                 sh 'git commit -m "[Automated commit: version bump]"'
