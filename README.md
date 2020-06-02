@@ -50,7 +50,7 @@ networks:
 
 ## Setup
 
-### Plugins to install 
+### Plugins to install
 
 To install plugins go to Manage Jenkins -> Manage Plugins -> Available
 - Kubernetes
@@ -81,7 +81,7 @@ builder(
 Designed to follow the standard gitflow workflow for development branching and for versioninig. 
 ![Gitflow example](https://dzone.com/storage/temp/12887668-1577951038067.png)
 
-### Main branches:
+### Main branches
 - Master: representative of operational system
 - Develop: integration branch 
 
@@ -90,7 +90,7 @@ Example:
 - Release branches: release/release-1 (branching off develop - finishing by merging into develop and master)
 - Hotfix branches: hotfix/hotfix-1 (branching off master - finishing by merging into master)
 
-## Architecture 
+## Architecture
 
 ![Layout of jenkins instances](https://github.com/dan05011991/diagrams/raw/master/JenkinsPipeline.png)
 
@@ -150,7 +150,7 @@ On push event:
 - Push docker (image) & project changes (pom.xml / config.js)
 - (optional) Pings message to slack 
 
-## Governance 
+## Governance
 
 Gitflow jobs have been created in jenkins (e.g. Start Release, Finish Release). Configuration has been added to demonstrate how we could use approves to prevent certain actions happening. e.g. Requiring testers to sign release off release prior to running `Finish Release` job
 
