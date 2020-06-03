@@ -63,7 +63,7 @@ def call(config) {
     stage('Docker Candidate Build') {
         docker_tag_version = docker_helper.getDockerTag(project_version)
 
-        sh "docker build . -t ${config.imageName}:${docker_tag_version}"
+        sh "docker build -t ${config.imageName}:${docker_tag_version} ."
     }
 
     stage('Prepare project for next iteration') {
