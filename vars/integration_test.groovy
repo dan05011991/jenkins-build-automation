@@ -26,7 +26,7 @@ def call(config) {
     if (config.buildType == 'maven') {
         stage('Maven Build') {
             try {
-                sh "docker build -f ${config.test} . -t ${unique_Id}"
+                sh "docker build -t ${unique_Id} -f ${config.test} ."
                 sh "docker run --name ${unique_Id} ${unique_Id} mvn surefire-report:report"
                 sh "docker cp \$(docker ps -aqf \"name=${unique_Id}\"):/usr/webapp/target/surefire-reports ."
             } finally {
