@@ -39,7 +39,7 @@ def call(config) {
     } else if (config.buildType == 'gulp') {
         stage('Gulp Build') {
             try {
-                sh "docker build -f ${config.test} . -t ${unique_Id}"
+                sh "docker build -t ${unique_Id} -f ${config.test} ."
                 sh "docker run --name ${unique_Id} ${unique_Id} ./node_modules/gulp/bin/gulp test"
                 sh "docker cp \$(docker ps -aqf \"name=${unique_Id}\"):/usr/webapp/tests/junit ."
             } finally {
@@ -52,7 +52,7 @@ def call(config) {
     } else if (config.buildType == 'webpack') {
         stage('Webpack Build') {
             try {
-                sh "docker build -f ${config.test} . -t ${unique_Id}"
+                sh "docker build -t ${unique_Id} -f ${config.test} ."
                 sh "docker run --name ${unique_Id} ${unique_Id} npm test"
                 sh "docker cp \$(docker ps -aqf \"name=${unique_Id}\"):/usr/webapp/tests/junit ."
             } finally {
