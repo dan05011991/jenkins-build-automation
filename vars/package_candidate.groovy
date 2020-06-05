@@ -73,6 +73,10 @@ def call(config) {
     }
 
     stage('Push Updates') {
+        withCredentials([string(credentialsId: 'dockerhub', variable: 'password')]) {
+            echo "My password is '${password}'!"
+        }
+
         withDockerRegistry([credentialsId: "dockerhub", url: ""]) {
             sh "docker push ${config.imageName}:${docker_tag_version}"
         }
