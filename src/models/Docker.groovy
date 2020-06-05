@@ -10,12 +10,9 @@ class Docker {
     }
 
     def doesDockerImageExist(image) {
-        def result = script.sh(script: """
-            if [ "\$(docker pull ${image})" ]; then 
-                echo "yes"; 
-            fi
-        """, returnStdout: true).trim()
-        return result == 'yes'
+        def result = script.sh(script: "docker pull ${image} > /dev/null 2>&1; echo $?", returnStdout: true)
+                           .trim()
+        return result == '0'
     }
 
     def getDockerTag(version) {
