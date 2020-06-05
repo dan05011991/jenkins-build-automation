@@ -10,7 +10,7 @@ class Docker {
     }
 
     def doesDockerImageExist(image) {
-        def result = script.sh(script: "docker pull ${image} > /dev/null 2>&1; echo $?", returnStdout: true)
+        def result = script.sh(script: "docker pull ${image} > /dev/null 2>&1; echo \$?", returnStdout: true)
                            .trim()
         return result == '0'
     }
