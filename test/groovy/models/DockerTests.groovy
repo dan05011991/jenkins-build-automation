@@ -38,10 +38,9 @@ class DockerTests extends BasePipelineTest {
     @Test
     void should_return_false_when_image_does_not_exist() {
         //Arrange
-        def exists = "no"
         def script = [
                 sh: {
-                    return exists
+                    throw new Exception("Image doesn't exist")
                 }
         ]
         def gitflow = new Gitflow(

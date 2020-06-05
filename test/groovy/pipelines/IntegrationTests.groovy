@@ -61,7 +61,7 @@ class IntegrationTests extends BasePipelineTest {
                 '   integration_test.run()',
                 '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=maven, imageName=example_image_name, test=test.dockerfile})',
                 '      integration_test.stage(Maven Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -f test.dockerfile . -t efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name efe28da0-24ed-4253-a351-467f7587cb71 efe28da0-24ed-4253-a351-467f7587cb71 mvn surefire-report:report)',
                 '         integration_test.sh(docker cp $(docker ps -aqf "name=efe28da0-24ed-4253-a351-467f7587cb71"):/usr/webapp/target/surefire-reports .)',
                 '         integration_test.junit(surefire-reports/**/*.xml)',
@@ -94,7 +94,7 @@ class IntegrationTests extends BasePipelineTest {
                 '   integration_test.run()',
                 '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=gulp, imageName=example_image_name, test=test.dockerfile})',
                 '      integration_test.stage(Gulp Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -f test.dockerfile . -t efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name efe28da0-24ed-4253-a351-467f7587cb71 efe28da0-24ed-4253-a351-467f7587cb71 ./node_modules/gulp/bin/gulp test)',
                 '         integration_test.sh(docker cp $(docker ps -aqf "name=efe28da0-24ed-4253-a351-467f7587cb71"):/usr/webapp/tests/junit .)',
                 '         integration_test.junit(junit/**/*.xml)',
@@ -127,7 +127,7 @@ class IntegrationTests extends BasePipelineTest {
                 '   integration_test.run()',
                 '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=webpack, imageName=example_image_name, test=test.dockerfile})',
                 '      integration_test.stage(Webpack Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -f test.dockerfile . -t efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name efe28da0-24ed-4253-a351-467f7587cb71 efe28da0-24ed-4253-a351-467f7587cb71 npm test)',
                 '         integration_test.sh(docker cp $(docker ps -aqf "name=efe28da0-24ed-4253-a351-467f7587cb71"):/usr/webapp/tests/junit .)',
                 '         integration_test.junit(junit/**/*.xml)',
@@ -162,7 +162,7 @@ class IntegrationTests extends BasePipelineTest {
                 '   integration_test.run()',
                 '   integration_test.call({gitflow=models.Gitflow@263f04ca, buildType=gulp, imageName=example_image_name, test=test.dockerfile})',
                 '      integration_test.stage(Gulp Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -f test.dockerfile . -t 8027a88d-134d-410a-8c35-40a7e9798fbb)',
+                '         integration_test.sh(docker build -t 8027a88d-134d-410a-8c35-40a7e9798fbb -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name 8027a88d-134d-410a-8c35-40a7e9798fbb 8027a88d-134d-410a-8c35-40a7e9798fbb ./node_modules/gulp/bin/gulp test)',
                 '         integration_test.sh(docker cp $(docker ps -aqf "name=8027a88d-134d-410a-8c35-40a7e9798fbb"):/usr/webapp/tests/junit .)',
                 '         integration_test.junit(junit/**/*.xml)',
@@ -170,10 +170,7 @@ class IntegrationTests extends BasePipelineTest {
                 '         integration_test.sh(docker rmi 8027a88d-134d-410a-8c35-40a7e9798fbb)',
                 '      integration_test.stage(Re-tag Docker Image, groovy.lang.Closure)',
                 '         integration_test.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
-                '         integration_test.sh({script=\n            if [ "$(docker pull example_image_name:EXAMPLE_TAG)" ]; then \n                echo "yes"; \n            fi\n        , returnStdout=true})',
-                '         integration_test.sh(docker pull example_image_name:EXAMPLE_TAG-release-candidate)',
-                '         integration_test.sh(docker tag example_image_name:EXAMPLE_TAG-release-candidate example_image_name:EXAMPLE_TAG)',
-                '         integration_test.withDockerRegistry({credentialsId=dockerhub, url=}, groovy.lang.Closure)'
+                '         integration_test.sh({script=docker pull example_image_name:EXAMPLE_TAG})'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
@@ -209,7 +206,7 @@ class IntegrationTests extends BasePipelineTest {
                 '      integration_test.echo(Lookahead merge from base branch test to develop)',
                 '      integration_test.sh(\n                git checkout test\n                git pull origin test\n                git checkout develop\n                git merge test\n            )',
                 '      integration_test.stage(Maven Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -f test.dockerfile . -t 7b43bb7f-b75b-484c-858b-96bf45bc9e32)',
+                '         integration_test.sh(docker build -t 7b43bb7f-b75b-484c-858b-96bf45bc9e32 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name 7b43bb7f-b75b-484c-858b-96bf45bc9e32 7b43bb7f-b75b-484c-858b-96bf45bc9e32 mvn surefire-report:report)',
                 '         integration_test.sh(docker cp $(docker ps -aqf "name=7b43bb7f-b75b-484c-858b-96bf45bc9e32"):/usr/webapp/target/surefire-reports .)',
                 '         integration_test.junit(surefire-reports/**/*.xml)',

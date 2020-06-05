@@ -12,7 +12,7 @@ class CustomAssertHelper {
                                                 .replaceAll(guidPattern, "12345678-1234-1234-1234-123456789012")
             String expectedStr = expected[index].replaceAll(pattern, "@00000000")
                                                 .replaceAll(guidPattern, "12345678-1234-1234-1234-123456789012")
-            assertEquals("Call stack item is not correct or has moved", expectedStr, actualStr)
+            assertEquals("Call stack item is not correct or has moved on line " + index, expectedStr, actualStr)
         }
     }
 }
