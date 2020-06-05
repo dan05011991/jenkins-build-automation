@@ -81,7 +81,8 @@ def call(config) {
                 sh "docker pull ${config.imageName}:${referenceTag}"
                 sh "docker tag ${config.imageName}:${referenceTag} ${config.imageName}:${docker_version}"
 
-                withDockerRegistry([credentialsId: "dockerhub", url: ""]) {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId:'dockerhub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                    sh 'docker login -u $USERNAME -p $PASSWORD -e admin@example.com'
                     sh "docker push ${config.imageName}:${docker_version}"
                 }
             }
