@@ -17,8 +17,8 @@ def call(config) {
         if (config.buildType == 'maven') {
             stage('Maven Version Update') {
                 //docker.image('maven:3-alpine').inside('-v $HOME/.m2:/root/.m2') {
-                docker.image('maven:3.5.2').inside {
-                    sh 'mvn --version'
+                docker.image('maven:3.5.2').inside('--entrypoint bash') {
+                    sh 'mvn --version':
                 }
 
                 sh "mvn versions:set -DnewVersion=${project_version}"
