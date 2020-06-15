@@ -50,14 +50,14 @@ def call(Map config=[:], Closure body={}) {
             return
         }
 
-        integration_test(
-                imageName: config.imageName,
-                buildType: config.buildType,
-                test: config.test,
-                gitflow: gitflow
-        )
-
-        if (gitflow.shouldPackageBuild()) {
+        if(!gitflow.shouldPackageBuild()) {
+            integration_test(
+                    imageName: config.imageName,
+                    buildType: config.buildType,
+                    test: config.test,
+                    gitflow: gitflow
+            )
+        } else {
             package_candidate(
                     projectKey: config.projectKey,
                     imageName: config.imageName,

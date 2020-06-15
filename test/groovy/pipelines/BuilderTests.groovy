@@ -115,8 +115,6 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@00000000})',
-                '            builder.echo(Integration pipeline called)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
                 '         builder.package_candidate({projectKey=example_key, imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@4628b1d3})',
                 '            builder.echo(Package pipeline called)'
@@ -585,13 +583,11 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
-    void should_call_integration_test_for_all_branches() {
+    void should_call_integration_test_for_integration_branches() {
         //Arrange
         String[] branches_to_test = [
                 "feature/something",
-                "release/something",
                 "bugfix/something",
-                "hotfix/something",
                 "develop",
                 "master"
         ]
@@ -615,6 +611,10 @@ class BuilderTests extends BasePipelineTest {
             //Assert
             assertEquals(1, helper.callStack.findAll { call ->
                 call.methodName == "integration_test"
+            }.size())
+
+            assertEquals(0, helper.callStack.findAll { call ->
+                call.methodName == "package_candidate"
             }.size())
 
             assertTrue("Should call integration tests for branch " + branch, helper.callStack.findAll { call ->
@@ -651,7 +651,7 @@ class BuilderTests extends BasePipelineTest {
             )
 
             //Assert
-            assertEquals(1, helper.callStack.findAll { call ->
+            assertEquals(0, helper.callStack.findAll { call ->
                 call.methodName == "integration_test"
             }.size())
 
