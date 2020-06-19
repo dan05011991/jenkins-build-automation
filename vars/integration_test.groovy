@@ -1,9 +1,7 @@
 #!/usr/bin/env groovy
-import models.Docker
 
 def call(config) {
 
-    def docker_helper = new Docker(script: this, gitflow: config.gitflow)
     def unique_Id = UUID.randomUUID().toString()
 
     // If pull request then merge latest from base integration branch
@@ -23,7 +21,20 @@ def call(config) {
             """
     }
 
-    if (config.buildType == 'maven') {
+    if (config.buildType == 'docker-in-maven') {
+        stage('Docker In Maven Build') {
+            try {
+                sh "docker build -t ${unique_Id} -f ${config.test} ."
+                sh "docker run --name ${unique_Id} ${unique_Id} mvn surefire-report:report"
+                sh "docker cp \$(docker ps -aqf \"name=${unique_Id}\"):/usr/webapp/target/surefire-reports ."
+            } finally {
+                junit 'surefire-reports/**/*.xml'
+
+                sh "docker rm -f ${unique_Id}"
+                sh "docker rmi ${unique_Id}"
+            }
+        }
+    } else if (config.buildType == 'maven') {
         stage('Maven Build') {
             try {
                 sh "docker build -t ${unique_Id} -f ${config.test} ."
@@ -66,28 +77,7 @@ def call(config) {
         throw new Exception('Invalid build type specified')
     }
 
-    if (config.gitflow.isMasterBranch()) {
 
-        stage('Re-tag Docker Image') {
-            project_version = sh([
-                    script      : 'git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p"',
-                    returnStdout: true
-            ]).trim()
-
-            docker_version = docker_helper.getDockerTag(project_version)
-
-            if (!docker_helper.doesDockerImageExist(config.imageName + ":" + docker_version)) {
-                referenceTag = docker_helper.getReferenceTag(project_version)
-                sh "docker pull ${config.imageName}:${referenceTag}"
-                sh "docker tag ${config.imageName}:${referenceTag} ${config.imageName}:${docker_version}"
-
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId:'dockerhub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-                    sh 'docker login -u $USERNAME -p $PASSWORD -e admin@example.com'
-                    sh "docker push ${config.imageName}:${docker_version}"
-                }
-            }
-        }
-    }
 }
 
 return this

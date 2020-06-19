@@ -91,7 +91,13 @@ class Gitflow {
         throw new Exception('Incorrect use of increment type function')
     }
 
-    def getNewReleaseVersion(String key, String tag) {
+    def getNextVersion(String key, String tag) {
+
+        if(isFeatureBranch()) {
+            return branch.replace("_", "-")
+                         .replace("/", "_")
+        }
+
         def type = getIncrementType()
         def job = script.build(
                 job: 'SemVer',
@@ -130,6 +136,10 @@ class Gitflow {
 
     def shouldExitBuild() {
         return isPackageBranch() && isBumpCommit() && !isPullRequest()
+    }
+
+    def shouldRunIntegrationTest() {
+        return !shouldPackageBuild()
     }
 
     def shouldPackageBuild() {

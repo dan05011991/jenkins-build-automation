@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+import models.Docker
 import models.Gitflow
 
 def call(Map config=[:], Closure body={}) {
@@ -22,6 +23,9 @@ def call(Map config=[:], Closure body={}) {
                 branch: source_branch,
                 is_pull_request: is_pull_request
         )
+        def docker_helper = new Docker(
+                script: this,
+                gitflow: config.gitflow)
 
         if (!gitflow.isValid()) {
             throw new Exception("Invalid branch syntax. Must follow standard GitFlow process")
@@ -41,46 +45,52 @@ def call(Map config=[:], Closure body={}) {
         stage('Pipeline setup') {
             parallel(
                     'Checkout Project': checkout_step(source_branch, source_url),
-                    'Create pipeline scripts': create_pipeline_step()
+                    'Create pipeline scripts': create_pipeline_step(),
+                    'Developer Docker login': docker_login('dev-docker-repo', docker_helper.developerRepo),
+                    'Release Docker login': docker_login('release-docker-repo', docker_helper.releaseRepo)
             )
         }
 
-        if(gitflow.shouldExitBuild()) {
+        if (gitflow.shouldExitBuild()) {
             echo "This is a bump commit build - exiting early"
             return
         }
 
-        if(!gitflow.shouldPackageBuild()) {
-            integration_test(
-                    imageName: config.imageName,
+        // If it's a feature branch or a package branch - we update the version
+        // Feature branch = transform the branch name into a version
+        // Package branch = uses job to generate new version
+        if (gitflow.isFeatureBranch() || gitflow.shouldPackageBuild()) {
+            update_project_version(
+                    projectKey: config.projectKey,
                     buildType: config.buildType,
-                    test: config.test,
                     gitflow: gitflow
             )
-        } else {
-            package_candidate(
-                    projectKey: config.projectKey,
-                    imageName: config.imageName,
+        }
+
+        // Should run integration test (Non-package routes)
+        if (gitflow.shouldRunIntegrationTest()) {
+            integration_test(
                     buildType: config.buildType,
                     test: config.test,
                     gitflow: gitflow
             )
         }
 
-        if(gitflow.isMasterBranch() && config.autoDeploy) {
-            gitTag = sh([
-                    script      : 'git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p"',
-                    returnStdout: true
-            ]).trim()
+        // Package candidate (hotfix, release branches excluding PR)
+        if (gitflow.shouldPackageBuild()) {
+            package_candidate(
+                    imageName: config.imageName,
+                    buildType: config.buildType,
+                    docker_helper: docker_helper
+            )
+        }
 
-            build(
-                job: 'Deploy',
-                parameters: [
-                        string(name: 'Image', value: "${config.imageName}"),
-                        string(name: 'Tag', value: "${gitTag}")
-                ],
-                propagate: true,
-                wait: true)
+        // Re-tag candidate
+        if (gitflow.isMasterBranch()) {
+            release_candidate(
+                    imageName: config.imageName,
+                    docker_helper: docker_helper
+            )
         }
 
         body()
@@ -100,6 +110,15 @@ def checkout_step(source_branch, source_url) {
 def create_pipeline_step() {
     return {
         createScript('get_parent_branch.sh')
+    }
+}
+
+def docker_login(credentialKey, url) {
+    withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                      credentialsId: credentialKey,
+                      usernameVariable: 'USERNAME',
+                      passwordVariable: 'PASSWORD']]) {
+        sh "docker login ${url} -u $USERNAME -p $PASSWORD -e admin@example.com"
     }
 }
 

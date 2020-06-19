@@ -358,6 +358,20 @@ class GitflowTests extends BasePipelineTest {
     }
 
     @Test
+    void should_transform_feature_branch_name_into_new_version() {
+        //Arrange
+        String branch = 'feature/ID123-test_branch'
+        String expected = 'feature_ID123-test-branch'
+        def gitflow = new Gitflow(branch: branch)
+
+        //Act
+        String result = gitflow.getNextVersion(null, null)
+
+        //Assert
+        assertEquals(expected, result)
+    }
+
+    @Test
     void should_get_new_patch_release_number_for_hotfix_branch() {
         //Arrange
         String projectKey = "example_project_key"
@@ -407,7 +421,7 @@ class GitflowTests extends BasePipelineTest {
         )
 
         //Act
-        String result = gitflow.getNewReleaseVersion(projectKey, gitTag)
+        String result = gitflow.getNextVersion(projectKey, gitTag)
 
         //Assert
         assertEquals("Should return the correct version", result, newVersion)
@@ -463,7 +477,7 @@ class GitflowTests extends BasePipelineTest {
         )
 
         //Act
-        String result = gitflow.getNewReleaseVersion(projectKey, gitTag)
+        String result = gitflow.getNextVersion(projectKey, gitTag)
 
         //Assert
         assertEquals("Should return the correct version", result, newVersion)
@@ -635,6 +649,7 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertTrue('Should package release build', result)
+        assertFalse('Should not run integration build', gitflow.shouldRunIntegrationTest())
     }
 
     @Test
@@ -665,6 +680,7 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertTrue('Should package release build', result)
+        assertFalse('Should not run integration build', gitflow.shouldRunIntegrationTest())
     }
 
     @Test
