@@ -11,10 +11,10 @@ class Docker {
         this.gitflow = items.get("gitflow")
     }
 
-    def doesDockerImageExist(image) {
+    def doesDockerImageExist(image, tag) {
         try {
-            script.sh(script: "docker pull ${image}")
-            return true;
+            script.sh(script: "docker pull ${developerRepo}/${image}:${tag}")
+            return true
         } catch(Exception ex) {
             return false
         }

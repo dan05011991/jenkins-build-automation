@@ -1,6 +1,7 @@
 package pipelines
 
 import com.lesfurets.jenkins.unit.BasePipelineTest
+import helpers.Pipeline
 import models.Gitflow
 import org.junit.Before
 import org.junit.Test
@@ -18,15 +19,7 @@ class IntegrationTests extends BasePipelineTest {
     void setUp() throws Exception {
         scriptRoots += 'vars'
         super.setUp()
-
-        def library = library().name('commons')
-                .defaultVersion('<notNeeded>')
-                .allowOverride(true)
-                .implicit(true)
-                .targetPath('<notNeeded>')
-                .retriever(projectSource())
-                .build()
-        helper.registerSharedLibrary(library)
+        Pipeline.setupLibrary(helper)
 
         // Common functions
         helper.registerAllowedMethod('pwd', [], { echo '/tmp/example' })
@@ -34,8 +27,40 @@ class IntegrationTests extends BasePipelineTest {
         helper.registerAllowedMethod('deleteDir', [], { echo 'Deleted Directory' })
         helper.registerAllowedMethod('git', [java.util.LinkedHashMap], { echo 'Git checkout' })
         helper.registerAllowedMethod('parallel', [Map.class], { echo 'Parallel job' })
+    }
 
-        helper.clearCallStack()
+    @Test
+    void should_execute_pipeline_successfully_and_follow_docker_in_maven_route() throws Exception {
+        //Arrange
+        binding.setVariable("BRANCH_NAME", "feature/test")
+        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
+
+        //Act
+        runScript(pipeline).call(
+                gitflow: new Gitflow(
+                        script: this,
+                        branch: "develop",
+                        is_pull_request: false
+                ),
+                buildType: 'docker-in-maven',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                testMounts: '-v test:test'
+        )
+
+        //Assert
+        assertStringArray([
+                '   integration_test.run()',
+                '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=docker-in-maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test})',
+                '      integration_test.stage(Docker In Maven Build, groovy.lang.Closure)',
+                '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
+                '         integration_test.sh(docker run --name 12345678-1234-1234-1234-123456789012 -v test:test 12345678-1234-1234-1234-123456789012)',
+                '         integration_test.sh(docker cp $(docker ps -aqf "name=efe28da0-24ed-4253-a351-467f7587cb71"):/usr/webapp/target/surefire-reports .)',
+                '         integration_test.junit(surefire-reports/**/*.xml)',
+                '         integration_test.sh(docker rm -f efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker rmi efe28da0-24ed-4253-a351-467f7587cb71)'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
     }
 
     @Test
@@ -133,44 +158,6 @@ class IntegrationTests extends BasePipelineTest {
                 '         integration_test.junit(junit/**/*.xml)',
                 '         integration_test.sh(docker rm -f efe28da0-24ed-4253-a351-467f7587cb71)',
                 '         integration_test.sh(docker rmi efe28da0-24ed-4253-a351-467f7587cb71)'
-        ] as String[], helper.callStack)
-        assertJobStatusSuccess()
-    }
-
-    @Test
-    void should_execute_pipeline_successfully_and_follow_master_route() throws Exception {
-        //Arrange
-        binding.setVariable("BRANCH_NAME", "feature/test")
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
-        helper.registerAllowedMethod("sh", [Map.class], {c -> "EXAMPLE_TAG"})
-        helper.registerAllowedMethod("withDockerRegistry", [Map.class, Closure.class], {c -> "Not required"})
-
-        //Act
-        runScript(pipeline).call(
-                gitflow: new Gitflow(
-                        script: this,
-                        branch: "master",
-                        is_pull_request: false
-                ),
-                buildType: 'gulp',
-                imageName: 'example_image_name',
-                test: 'test.dockerfile'
-        )
-
-        //Assert
-        assertStringArray([
-                '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@263f04ca, buildType=gulp, imageName=example_image_name, test=test.dockerfile})',
-                '      integration_test.stage(Gulp Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -t 8027a88d-134d-410a-8c35-40a7e9798fbb -f test.dockerfile .)',
-                '         integration_test.sh(docker run --name 8027a88d-134d-410a-8c35-40a7e9798fbb 8027a88d-134d-410a-8c35-40a7e9798fbb ./node_modules/gulp/bin/gulp test)',
-                '         integration_test.sh(docker cp $(docker ps -aqf "name=8027a88d-134d-410a-8c35-40a7e9798fbb"):/usr/webapp/tests/junit .)',
-                '         integration_test.junit(junit/**/*.xml)',
-                '         integration_test.sh(docker rm -f 8027a88d-134d-410a-8c35-40a7e9798fbb)',
-                '         integration_test.sh(docker rmi 8027a88d-134d-410a-8c35-40a7e9798fbb)',
-                '      integration_test.stage(Re-tag Docker Image, groovy.lang.Closure)',
-                '         integration_test.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
-                '         integration_test.sh({script=docker pull example_image_name:EXAMPLE_TAG})'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }

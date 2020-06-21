@@ -9,6 +9,7 @@ import org.junit.Test
 import static helpers.CustomAssertHelper.assertStringArray
 
 class UpdateProjectVersionTests extends BasePipelineTest {
+
     private final String pipeline = "update_project_version.groovy"
 
     @Override

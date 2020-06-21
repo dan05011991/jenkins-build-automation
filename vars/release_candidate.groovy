@@ -10,12 +10,15 @@ def call(config) {
 
         docker_version = config.docker_helper.getDockerTag(project_version)
 
-        if (!config.docker_helper.doesDockerImageExist(config.imageName + ":" + docker_version)) {
+        if (!config.docker_helper.doesDockerImageExist(config.imageName, docker_version)) {
             referenceTag = config.docker_helper.getReferenceTag(project_version)
-            sh "docker pull ${config.imageName}:${referenceTag}"
-            sh "docker tag ${config.imageName}:${referenceTag} ${config.imageName}:${docker_version}"
 
-            sh "docker push ${config.imageName}:${docker_version}"
+            developerImage = "${config.docker_helper.developerRepo}/${config.imageName}:${referenceTag}"
+            releaseImage = "${config.docker_helper.releaseRepo}/${config.imageName}:${docker_version}"
+
+            sh "docker pull ${developerImage}"
+            sh "docker tag ${developerImage} ${releaseImage}"
+            sh "docker push ${releaseImage}"
         }
     }
 }

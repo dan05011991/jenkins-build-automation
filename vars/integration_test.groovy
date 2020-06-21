@@ -25,7 +25,7 @@ def call(config) {
         stage('Docker In Maven Build') {
             try {
                 sh "docker build -t ${unique_Id} -f ${config.test} ."
-                sh "docker run --name ${unique_Id} ${unique_Id} mvn surefire-report:report"
+                sh "docker run --name ${unique_Id} ${config.testMounts} ${unique_Id}"
                 sh "docker cp \$(docker ps -aqf \"name=${unique_Id}\"):/usr/webapp/target/surefire-reports ."
             } finally {
                 junit 'surefire-reports/**/*.xml'

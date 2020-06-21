@@ -2,6 +2,7 @@ package pipelines
 
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import helpers.Constants
+import helpers.Pipeline
 import org.junit.Before
 import org.junit.Test
 
@@ -21,15 +22,7 @@ class BuilderTests extends BasePipelineTest {
     void setUp() {
         scriptRoots += 'vars'
         super.setUp()
-
-        def library = library().name('commons')
-                .defaultVersion('<notNeeded>')
-                .allowOverride(true)
-                .implicit(true)
-                .targetPath('<notNeeded>')
-                .retriever(projectSource())
-                .build()
-        helper.registerSharedLibrary(library)
+        Pipeline.setupLibrary(helper)
 
         // Mocking out external pipelines
         helper.registerAllowedMethod('integration_test', [Map.class], { echo 'Integration pipeline called' })
@@ -41,8 +34,6 @@ class BuilderTests extends BasePipelineTest {
         helper.registerAllowedMethod('deleteDir', [], { echo 'Deleted Directory' })
         helper.registerAllowedMethod('git', [java.util.LinkedHashMap], { echo 'Git checkout' })
         helper.registerAllowedMethod('parallel', [Map.class], { echo 'Parallel job' })
-
-        helper.clearCallStack()
     }
 
     @Test

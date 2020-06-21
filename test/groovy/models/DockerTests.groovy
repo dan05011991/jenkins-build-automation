@@ -29,7 +29,7 @@ class DockerTests extends BasePipelineTest {
         )
 
         //Act
-        def result = docker.doesDockerImageExist("test")
+        def result = docker.doesDockerImageExist("test", "1.0.0")
 
         //Assert
         assertTrue("Image should exist", result)
@@ -53,7 +53,7 @@ class DockerTests extends BasePipelineTest {
         )
 
         //Act
-        def result = docker.doesDockerImageExist("test")
+        def result = docker.doesDockerImageExist("test", "1.0.0")
 
         //Assert
         assertFalse("Image does not exists", result)

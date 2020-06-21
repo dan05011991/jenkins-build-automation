@@ -72,6 +72,7 @@ def call(Map config=[:], Closure body={}) {
             integration_test(
                     buildType: config.buildType,
                     test: config.test,
+                    testMounts: config.testMounts,
                     gitflow: gitflow
             )
         }
@@ -79,8 +80,10 @@ def call(Map config=[:], Closure body={}) {
         // Package candidate (hotfix, release branches excluding PR)
         if (gitflow.shouldPackageBuild()) {
             package_candidate(
-                    imageName: config.imageName,
                     buildType: config.buildType,
+                    imageName: config.imageName,
+                    test: config.test,
+                    testMounts: config.testMounts,
                     docker_helper: docker_helper
             )
         }
