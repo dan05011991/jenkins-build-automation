@@ -11,6 +11,17 @@ class Docker {
         this.gitflow = items.get("gitflow")
     }
 
+    def pushDeveloperImage(image) {
+        tag = script.sh([
+                script      : 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout',
+                returnStdout: true
+        ]).trim()
+
+        script.sh(
+                script: "docker push ${developerRepo}/${image}:${tag}"
+        )
+    }
+
     def doesDockerImageExist(image, tag) {
         try {
             script.sh(script: "docker pull ${developerRepo}/${image}:${tag}")

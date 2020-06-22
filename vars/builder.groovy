@@ -70,10 +70,12 @@ def call(Map config=[:], Closure body={}) {
         // Should run integration test (Non-package routes)
         if (gitflow.shouldRunIntegrationTest()) {
             integration_test(
+                    imageName: config.imageName,
                     buildType: config.buildType,
                     test: config.test,
                     testMounts: config.testMounts,
-                    gitflow: gitflow
+                    gitflow: gitflow,
+                    docker_helper: docker_helper
             )
         }
 
