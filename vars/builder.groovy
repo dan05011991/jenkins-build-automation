@@ -122,7 +122,7 @@ def docker_login(credentialKey, url) {
                           credentialsId: credentialKey,
                           usernameVariable: 'USERNAME',
                           passwordVariable: 'PASSWORD']]) {
-            sh "docker login ${url} -u $USERNAME -p $PASSWORD -e admin@example.com"
+            sh "docker login -u $USERNAME -p $PASSWORD -e admin@example.com ${url}"
         }
     }
 }
