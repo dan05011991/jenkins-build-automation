@@ -11,6 +11,25 @@ import static org.junit.Assert.fail
 class DockerTests extends BasePipelineTest {
 
     @Test
+    void should_push_docker_image() {
+        //Arrange
+        def script = [
+                sh: {
+                    return '1.0.0'
+                }
+        ]
+        def docker = new Docker(
+                script: script
+        )
+
+        //Act
+        docker.pushDeveloperImage('test-image')
+
+        //Assert
+
+    }
+
+    @Test
     void should_return_true_when_image_exists() {
         //Arrange
         def exists = "yes"

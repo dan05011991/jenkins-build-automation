@@ -12,7 +12,7 @@ class Docker {
     }
 
     def pushDeveloperImage(image) {
-        tag = script.sh([
+        def tag = script.sh([
                 script      : 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout',
                 returnStdout: true
         ]).trim()
