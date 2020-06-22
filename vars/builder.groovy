@@ -117,11 +117,13 @@ def create_pipeline_step() {
 }
 
 def docker_login(credentialKey, url) {
-    withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                      credentialsId: credentialKey,
-                      usernameVariable: 'USERNAME',
-                      passwordVariable: 'PASSWORD']]) {
-        sh "docker login ${url} -u $USERNAME -p $PASSWORD -e admin@example.com"
+    return {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                          credentialsId: credentialKey,
+                          usernameVariable: 'USERNAME',
+                          passwordVariable: 'PASSWORD']]) {
+            sh "docker login ${url} -u $USERNAME -p $PASSWORD -e admin@example.com"
+        }
     }
 }
 

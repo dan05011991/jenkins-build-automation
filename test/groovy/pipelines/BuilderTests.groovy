@@ -2,6 +2,7 @@ package pipelines
 
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import helpers.Constants
+import helpers.CustomAssertHelper
 import helpers.Pipeline
 import org.junit.Before
 import org.junit.Test
@@ -25,15 +26,19 @@ class BuilderTests extends BasePipelineTest {
         Pipeline.setupLibrary(helper)
 
         // Mocking out external pipelines
-        helper.registerAllowedMethod('integration_test', [Map.class], { echo 'Integration pipeline called' })
-        helper.registerAllowedMethod('package_candidate', [Map.class], { echo 'Package pipeline called' })
+        helper.registerAllowedMethod('update_project_version', [Map.class], { echo 'update_project_version pipeline called' })
+        helper.registerAllowedMethod('integration_test', [Map.class], { echo 'Integration test pipeline called' })
+        helper.registerAllowedMethod('package_candidate', [Map.class], { echo 'package_candidate pipeline called' })
+        helper.registerAllowedMethod('release_candidate', [Map.class], { echo 'release_candidate pipeline called' })
 
         // Common functions
         helper.registerAllowedMethod('pwd', [], { echo '/tmp/example' })
         helper.registerAllowedMethod('cleanWs', [], { echo 'Workspace cleaned' })
         helper.registerAllowedMethod('deleteDir', [], { echo 'Deleted Directory' })
         helper.registerAllowedMethod('git', [java.util.LinkedHashMap], { echo 'Git checkout' })
+
         helper.registerAllowedMethod('parallel', [Map.class], { echo 'Parallel job' })
+        helper.registerAllowedMethod('withCredentials', [List.class, Closure.class], { echo 'Parallel job' })
     }
 
     @Test
@@ -48,13 +53,14 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
         //Assert
         assertStringArray([
                 '   builder.run()',
-                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, projectKey=example_key})',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
                 '         builder.properties([null])',
@@ -65,10 +71,12 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
-                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
-                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@00000000})',
-                '            builder.echo(Integration pipeline called)'
+                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@5910de75})',
+                '            builder.echo(update_project_version pipeline called)',
+                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@5910de75})',
+                '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
@@ -86,13 +94,14 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
         //Assert
         assertStringArray([
                 '   builder.run()',
-                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, projectKey=example_key})',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
                 '         builder.properties([null])',
@@ -103,12 +112,16 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
-                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
                 '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.package_candidate({projectKey=example_key, imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@4628b1d3})',
-                '            builder.echo(Package pipeline called)'
+                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@7e0aadd0})',
+                '            builder.echo(update_project_version pipeline called)',
+                '         builder.sh({script=git log -1, returnStdout=true})',
+                '         builder.sh({script=git log -1, returnStdout=true})',
+                '         builder.package_candidate({buildType=maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, docker_helper=models.Docker@21362712})',
+                '            builder.echo(package_candidate pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
@@ -126,14 +139,14 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
-                projectKey: 'example_key',
-                autoDeploy: true
+                testMounts: '-v test:test',
+                projectKey: 'example_key'
         )
 
         //Assert
         assertStringArray([
                 '   builder.run()',
-                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, projectKey=example_key, autoDeploy=true})',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
                 '         builder.properties([null])',
@@ -144,14 +157,12 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
-                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
-                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@1df98368})',
-                '            builder.echo(Integration pipeline called)',
-                '         builder.sh({script=git describe --tags | sed -n -e \"s/\\([0-9]\\)-.*/\\1/ p\", returnStdout=true})',
-                '         builder.string({name=Image, value=example_image_name})',
-                '         builder.string({name=Tag, value=this is not a bump})',
-                '         builder.build({job=Deploy, parameters=[null, null], propagate=true, wait=true})'
+                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@4108fa66})',
+                '            builder.echo(Integration test pipeline called)',
+                '         builder.release_candidate({imageName=example_image_name, docker_helper=models.Docker@21362712})',
+                '            builder.echo(release_candidate pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
@@ -170,13 +181,14 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
         //Assert
         assertStringArray([
                 '   builder.run()',
-                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, projectKey=example_key})',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
                 '         builder.properties([null])',
@@ -187,11 +199,11 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: true)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
-                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@77cf3f8b})',
-                '            builder.echo(Integration pipeline called)'
+                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@7e0aadd0})',
+                '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
@@ -210,13 +222,14 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
         //Assert
         assertStringArray([
                 '   builder.run()',
-                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, projectKey=example_key})',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
                 '         builder.properties([null])',
@@ -227,11 +240,11 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: true)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
-                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow@76b74e9c})',
-                '            builder.echo(Integration pipeline called)'
+                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@226f885f})',
+                '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
@@ -262,6 +275,7 @@ class BuilderTests extends BasePipelineTest {
                         deploymentRepo: 'example_url',
                         imageName: 'example_image_name',
                         test: 'test.dockerfile',
+                        testMounts: '-v test:test',
                         projectKey: 'example_key'
                 )
             }
@@ -302,6 +316,7 @@ class BuilderTests extends BasePipelineTest {
                         deploymentRepo: 'example_url',
                         imageName: 'example_image_name',
                         test: 'test.dockerfile',
+                        testMounts: '-v test:test',
                         projectKey: 'example_key'
                 )
             }
@@ -340,6 +355,7 @@ class BuilderTests extends BasePipelineTest {
                     deploymentRepo: 'example_url',
                     imageName: 'example_image_name',
                     test: 'test.dockerfile',
+                    testMounts: '-v test:test',
                     projectKey: 'example_key'
             )
         }
@@ -374,6 +390,7 @@ class BuilderTests extends BasePipelineTest {
                     deploymentRepo: 'example_url',
                     imageName: 'example_image_name',
                     test: 'test.dockerfile',
+                    testMounts: '-v test:test',
                     projectKey: 'example_key'
             )
         }
@@ -395,6 +412,7 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
@@ -421,6 +439,7 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
@@ -446,6 +465,7 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
@@ -471,13 +491,14 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
         //Assert
         assertStringArray([
                 '   builder.run()',
-                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, projectKey=example_key})',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
                 '         builder.properties([null])',
@@ -488,7 +509,7 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
-                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure})',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
                 '         builder.echo(This is a bump commit build - exiting early)'
@@ -509,6 +530,7 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
@@ -535,6 +557,7 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
@@ -561,6 +584,7 @@ class BuilderTests extends BasePipelineTest {
                 deploymentRepo: 'example_url',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
+                testMounts: '-v test:test',
                 projectKey: 'example_key'
         )
 
@@ -596,22 +620,20 @@ class BuilderTests extends BasePipelineTest {
                     deploymentRepo: 'example_url',
                     imageName: 'example_image_name',
                     test: 'test.dockerfile',
+                    testMounts: '-v test:test',
                     projectKey: 'example_key'
             )
 
             //Assert
-            assertEquals(1, helper.callStack.findAll { call ->
-                call.methodName == "integration_test"
-            }.size())
-
-            assertEquals(0, helper.callStack.findAll { call ->
-                call.methodName == "package_candidate"
-            }.size())
+            assertEquals(1, helper.callStack.findAll { call -> call.methodName == "integration_test" }.size())
+            assertEquals(0, helper.callStack.findAll { call -> call.methodName == "package_candidate" }.size())
 
             assertTrue("Should call integration tests for branch " + branch, helper.callStack.findAll { call ->
                 call.methodName == "integration_test"
             }.any { call ->
-                callArgsToString(call).contains("imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow")
+                return CustomAssertHelper.assertEquals(
+                        "{buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000}",
+                        callArgsToString(call))
             })
             assertJobStatusSuccess()
         }
@@ -638,6 +660,7 @@ class BuilderTests extends BasePipelineTest {
                     deploymentRepo: 'example_url',
                     imageName: 'example_image_name',
                     test: 'test.dockerfile',
+                    testMounts: '-v test:test',
                     projectKey: 'example_key'
             )
 
@@ -649,7 +672,9 @@ class BuilderTests extends BasePipelineTest {
             assertTrue("Should call package candidate for branch " + branch, helper.callStack.findAll { call ->
                 call.methodName == "package_candidate"
             }.any { call ->
-                callArgsToString(call).contains("imageName=example_image_name, buildType=maven, test=test.dockerfile, gitflow=models.Gitflow")
+                return CustomAssertHelper.assertEquals(
+                        "{buildType=maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, docker_helper=models.Docker@00000000}",
+                        callArgsToString(call))
             })
             assertJobStatusSuccess()
         }
@@ -678,6 +703,7 @@ class BuilderTests extends BasePipelineTest {
                     deploymentRepo: 'example_url',
                     imageName: 'example_image_name',
                     test: 'test.dockerfile',
+                    testMounts: '-v test:test',
                     projectKey: 'example_key'
             )
 

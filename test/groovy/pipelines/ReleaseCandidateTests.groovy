@@ -2,6 +2,7 @@ package pipelines
 
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import helpers.Pipeline
+import models.Docker
 import models.Gitflow
 import org.junit.Before
 import org.junit.Test
@@ -28,32 +29,33 @@ class ReleaseCandidateTests extends BasePipelineTest {
         helper.registerAllowedMethod("sh", [Map.class], {c -> "EXAMPLE_TAG"})
         helper.registerAllowedMethod("withDockerRegistry", [Map.class, Closure.class], { c -> "Not required"})
 
+        def gitflow = new Gitflow(
+                script: this,
+                branch: "master",
+                is_pull_request: false
+        )
+        def docker_helper = new Docker(
+                script: this,
+                gitflow: gitflow
+        )
         //Act
         runScript(pipeline).call(
-                gitflow: new Gitflow(
-                        script: this,
-                        branch: "master",
-                        is_pull_request: false
-                ),
                 buildType: 'gulp',
                 imageName: 'example_image_name',
-                test: 'test.dockerfile'
+                test: 'test.dockerfile',
+                docker_helper: docker_helper
         )
+
 
         //Assert
         assertStringArray([
-                '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@263f04ca, buildType=gulp, imageName=example_image_name, test=test.dockerfile})',
-                '      integration_test.stage(Gulp Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -t 8027a88d-134d-410a-8c35-40a7e9798fbb -f test.dockerfile .)',
-                '         integration_test.sh(docker run --name 8027a88d-134d-410a-8c35-40a7e9798fbb 8027a88d-134d-410a-8c35-40a7e9798fbb ./node_modules/gulp/bin/gulp test)',
-                '         integration_test.sh(docker cp $(docker ps -aqf "name=8027a88d-134d-410a-8c35-40a7e9798fbb"):/usr/webapp/tests/junit .)',
-                '         integration_test.junit(junit/**/*.xml)',
-                '         integration_test.sh(docker rm -f 8027a88d-134d-410a-8c35-40a7e9798fbb)',
-                '         integration_test.sh(docker rmi 8027a88d-134d-410a-8c35-40a7e9798fbb)',
-                '      integration_test.stage(Re-tag Docker Image, groovy.lang.Closure)',
-                '         integration_test.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
-                '         integration_test.sh({script=docker pull example_image_name:EXAMPLE_TAG})'
+                '   release_candidate.run()',
+                '   release_candidate.call({buildType=gulp, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@410954b})',
+                '      release_candidate.stage(Re-tag Docker Image, groovy.lang.Closure)',
+                '         release_candidate.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
+                '         release_candidate.sh(docker pull hub.docker.com/example_image_name:EXAMPLE_TAG-release-candidate)',
+                '         release_candidate.sh(docker tag hub.docker.com/example_image_name:EXAMPLE_TAG-release-candidate hub.docker.com/example_image_name:EXAMPLE_TAG)',
+                '         release_candidate.sh(docker push hub.docker.com/example_image_name:EXAMPLE_TAG)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
