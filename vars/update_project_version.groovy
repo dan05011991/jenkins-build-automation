@@ -3,12 +3,12 @@
 def call(config) {
     stage('Update project version') {
 
-        gitTag = sh([
+        def gitTag = sh([
                 script      : 'git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p"',
                 returnStdout: true
         ]).trim()
 
-        project_version = config.gitflow.getNextVersion(config.projectKey, gitTag)
+        def project_version = config.gitflow.getNextVersion(config.projectKey, gitTag)
 
         if (config.buildType == 'docker-in-maven' || config.buildType == 'maven') {
             stage('Maven Version Update') {

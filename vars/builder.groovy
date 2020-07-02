@@ -6,16 +6,18 @@ def call(Map config=[:], Closure body={}) {
 
     node {
         properties([
-                disableConcurrentBuilds()
+                disableConcurrentBuilds(),
+                buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '5'))
         ])
 
         // This section must be above the gitflow initialisation
-        if (BRANCH_NAME.startsWith('PR-')) {
+        def is_pull_request = BRANCH_NAME.startsWith('PR-')
+        def source_branch = BRANCH_NAME
+        def source_url = "${scm.userRemoteConfigs[0].url}"
+
+        // Override source branch with change_branch in PR scenarios
+        if (is_pull_request) {
             source_branch = CHANGE_BRANCH
-            is_pull_request = true
-        } else {
-            source_branch = BRANCH_NAME
-            is_pull_request = false
         }
 
         def gitflow = new Gitflow(
@@ -34,8 +36,6 @@ def call(Map config=[:], Closure body={}) {
         stage('Clean') {
 
             cleanWs()
-
-            source_url = "${scm.userRemoteConfigs[0].url}"
 
             echo "Source branch: ${source_branch}"
             echo "Source Url: ${source_url}"
@@ -57,9 +57,9 @@ def call(Map config=[:], Closure body={}) {
         }
 
         // If it's a feature branch or a package branch - we update the version
-        // Feature branch = transform the branch name into a version
+        // Feature / Bugfix branch = transform the branch name into a version
         // Package branch = uses job to generate new version
-        if (gitflow.isFeatureBranch() || gitflow.shouldPackageBuild()) {
+        if (gitflow.shouldUpdateVersion()) {
             update_project_version(
                     projectKey: config.projectKey,
                     buildType: config.buildType,
@@ -124,7 +124,12 @@ def docker_login(credentialKey, url) {
                           credentialsId: credentialKey,
                           usernameVariable: 'USERNAME',
                           passwordVariable: 'PASSWORD']]) {
-            sh "docker login -u $USERNAME -p $PASSWORD -e admin@example.com ${url}"
+            try {
+                sh "docker login -u $USERNAME -p $PASSWORD -e admin@example.com ${url}"
+            } catch(Exception ex) {
+                echo 'Failed using -e parameter, trying without ...'
+                sh "docker login -u $USERNAME -p $PASSWORD ${url}"
+            }
         }
     }
 }

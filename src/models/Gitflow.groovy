@@ -138,6 +138,13 @@ class Gitflow {
         return isPackageBranch() && isBumpCommit() && !isPullRequest()
     }
 
+    // If it's a feature branch or a package branch - we update the version
+    // Feature / Bugfix branch = transform the branch name into a version
+    // Package branch = uses job to generate new version
+    def shouldUpdateVersion() {
+        return isFeatureBranch() || isFeatureBranch() ||  shouldPackageBuild()
+    }
+
     def shouldRunIntegrationTest() {
         return !shouldPackageBuild()
     }
