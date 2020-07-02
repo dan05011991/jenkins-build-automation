@@ -10,6 +10,9 @@ def call(Map config=[:], Closure body={}) {
                 buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '5'))
         ])
 
+        sh 'git config --global user.email "jenkins@bnp.com"'
+        sh 'git config --global user.name "Jenkins Admin"'
+
         // This section must be above the gitflow initialisation
         def is_pull_request = BRANCH_NAME.startsWith('PR-')
         def source_branch = BRANCH_NAME
