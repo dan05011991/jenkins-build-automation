@@ -93,7 +93,7 @@ class Gitflow {
 
     def getNextVersion(String key, String tag) {
 
-        if(isFeatureBranch()) {
+        if(isFeatureBranch() || isBugfixBranch()) {
             return branch.replace("_", "-")
                          .replace("/", "_")
         }

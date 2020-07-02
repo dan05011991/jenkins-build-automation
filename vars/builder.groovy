@@ -25,7 +25,7 @@ def call(Map config=[:], Closure body={}) {
         )
         def docker_helper = new Docker(
                 script: this,
-                gitflow: config.gitflow)
+                gitflow: gitflow)
 
         if (!gitflow.isValid()) {
             throw new Exception("Invalid branch syntax. Must follow standard GitFlow process")
