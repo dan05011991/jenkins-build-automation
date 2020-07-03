@@ -29,8 +29,10 @@ pipeline {
                 )
 
                 script {
-                    sh "git checkout -b hotfix/${env.Label}"
-                    sh "git push origin hotfix/${env.Label}"
+                    sshagent(credentials: ['ssh']) {
+                        sh "git checkout -b hotfix/${env.Label}"
+                        sh "git push origin hotfix/${env.Label}"
+                    }
                 }
             }
         }

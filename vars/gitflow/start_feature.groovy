@@ -29,8 +29,10 @@ pipeline {
                 )
 
                 script {
-                    sh "git checkout -b feature/${env.Label}"
-                    sh "git push origin feature/${env.Label}"
+                    sshagent(credentials: ['ssh']) {
+                        sh "git checkout -b feature/${env.Label}"
+                        sh "git push origin feature/${env.Label}"
+                    }
                 }
             }
         }
