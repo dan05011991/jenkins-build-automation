@@ -3,28 +3,30 @@ import models.VersionManager
 import java.util.regex.Pattern
 
 node {
-    parameters {
-        string(
-                name: 'PROJECT_KEY',
-                defaultValue: 'DEFAULT'
-        )
-        string(
-                name: 'RELEASE_TYPE',
-                defaultValue: 'DEFAULT'
-        )
-        string(
-                name: 'GIT_TAG',
-                defaultValue: 'DEFAULT'
-        )
-        string(
-                name: 'PARENT_HASH',
-                defaultValue: 'DEFAULT'
-        )
-        string(
-                name: 'BASE_BRANCH',
-                defaultValue: 'DEFAULT'
-        )
-    }
+    properties([
+        parameters ([
+            string(
+                    name: 'PROJECT_KEY',
+                    defaultValue: 'DEFAULT'
+            ),
+            string(
+                    name: 'RELEASE_TYPE',
+                    defaultValue: 'DEFAULT'
+            ),
+            string(
+                    name: 'GIT_TAG',
+                    defaultValue: 'DEFAULT'
+            ),
+            string(
+                    name: 'PARENT_HASH',
+                    defaultValue: 'DEFAULT'
+            ),
+            string(
+                    name: 'BASE_BRANCH',
+                    defaultValue: 'DEFAULT'
+            )
+        ])
+    ])
 
     stage('Setup') {
         sh 'git config --global user.email "jenkins@bnp.com"'
