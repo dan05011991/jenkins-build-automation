@@ -53,9 +53,9 @@ class ReleaseCandidateTests extends BasePipelineTest {
                 '   release_candidate.call({buildType=gulp, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@410954b})',
                 '      release_candidate.stage(Re-tag Docker Image, groovy.lang.Closure)',
                 '         release_candidate.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
-                '         release_candidate.sh(docker pull hub.docker.com/example_image_name:EXAMPLE_TAG-release-candidate)',
-                '         release_candidate.sh(docker tag hub.docker.com/example_image_name:EXAMPLE_TAG-release-candidate hub.docker.com/example_image_name:EXAMPLE_TAG)',
-                '         release_candidate.sh(docker push hub.docker.com/example_image_name:EXAMPLE_TAG)'
+                '         release_candidate.sh(docker pull index.docker.io/example_image_name:EXAMPLE_TAG-release-candidate)',
+                '         release_candidate.sh(docker tag index.docker.io/example_image_name:EXAMPLE_TAG-release-candidate index.docker.io/example_image_name:EXAMPLE_TAG)',
+                '         release_candidate.sh(docker push index.docker.io/example_image_name:EXAMPLE_TAG)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
