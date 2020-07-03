@@ -4,7 +4,11 @@ pipeline {
     parameters {
         choice(
                 name: 'Project',
-                choices: ['dan05011991/barebones-react', 'dan05011991/demo-application-backend', 'vickeryw/bandpCore'],
+                choices: [
+                        'Please Select',
+                        'dan05011991/barebones-react',
+                        'dan05011991/demo-application-backend','vickeryw/bandpCore'
+                ],
                 description: ''
         )
         string(
