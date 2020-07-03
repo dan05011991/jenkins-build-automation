@@ -39,13 +39,14 @@ class BuilderTests extends BasePipelineTest {
 
         helper.registerAllowedMethod('parallel', [Map.class], { echo 'Parallel job' })
         helper.registerAllowedMethod('withCredentials', [List.class, Closure.class], { echo 'Parallel job' })
+
+        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
     }
 
     @Test
     void should_execute_pipeline_successfully_and_follow_integration_route() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "feature/test")
-        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
 
         //Act
         runScript(pipeline).call(
@@ -63,7 +64,11 @@ class BuilderTests extends BasePipelineTest {
                 '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
-                '         builder.properties([null])',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
@@ -73,9 +78,9 @@ class BuilderTests extends BasePipelineTest {
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
                 '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
-                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@5910de75})',
+                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@1b5bc39d})',
                 '            builder.echo(update_project_version pipeline called)',
-                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@5910de75})',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@1b5bc39d, docker_helper=models.Docker@34abdee4})',
                 '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
@@ -85,7 +90,6 @@ class BuilderTests extends BasePipelineTest {
     void should_execute_pipeline_successfully_and_follow_release_route() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "release/test")
-        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         //Act
@@ -104,7 +108,11 @@ class BuilderTests extends BasePipelineTest {
                 '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
-                '         builder.properties([null])',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
@@ -130,7 +138,6 @@ class BuilderTests extends BasePipelineTest {
     void should_execute_pipeline_successfully_deploy() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "master")
-        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         //Act
@@ -149,7 +156,11 @@ class BuilderTests extends BasePipelineTest {
                 '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
-                '         builder.properties([null])',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
@@ -159,7 +170,7 @@ class BuilderTests extends BasePipelineTest {
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
                 '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
-                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@4108fa66})',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000, docker_helper=models.Docker@00000000})',
                 '            builder.echo(Integration test pipeline called)',
                 '         builder.release_candidate({imageName=example_image_name, docker_helper=models.Docker@21362712})',
                 '            builder.echo(release_candidate pipeline called)'
@@ -172,7 +183,6 @@ class BuilderTests extends BasePipelineTest {
         //Arrange
         binding.setVariable("BRANCH_NAME", "PR-13")
         binding.setVariable("CHANGE_BRANCH", "release/test")
-        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         //Act
@@ -191,7 +201,11 @@ class BuilderTests extends BasePipelineTest {
                 '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
-                '         builder.properties([null])',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
@@ -202,7 +216,7 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@7e0aadd0})',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000, docker_helper=models.Docker@00000000})',
                 '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
@@ -213,7 +227,6 @@ class BuilderTests extends BasePipelineTest {
         //Arrange
         binding.setVariable("BRANCH_NAME", "PR-13")
         binding.setVariable("CHANGE_BRANCH", "hotfix/test")
-        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         //Act
@@ -232,7 +245,11 @@ class BuilderTests extends BasePipelineTest {
                 '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
-                '         builder.properties([null])',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
@@ -243,7 +260,7 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
                 '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.integration_test({buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@226f885f})',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000, docker_helper=models.Docker@00000000})',
                 '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
@@ -341,7 +358,6 @@ class BuilderTests extends BasePipelineTest {
                 "develop",
                 "master"
         ]
-        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         for (String branch : branches_to_test) {
@@ -375,7 +391,6 @@ class BuilderTests extends BasePipelineTest {
                 "develop",
                 "master"
         ]
-        binding.setVariable("scm", [ userRemoteConfigs: [[ url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         for (String branch : branches_to_test) {
@@ -402,7 +417,6 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_default_pull_request_flag_to_false() {
         //Arrange
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> "this is not a bump" })
         binding.setVariable("BRANCH_NAME", "feature/test")
 
@@ -428,7 +442,6 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_set_pull_request_flag_to_true() {
         //Arrange
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> "this is not a bump" })
         binding.setVariable("BRANCH_NAME", "PR-12")
         binding.setVariable("CHANGE_BRANCH", "feature/dev")
@@ -455,7 +468,6 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_set_pull_request_flag_to_false() {
         //Arrange
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> "this is not a bump" })
         binding.setVariable("BRANCH_NAME", "feature/dev")
 
@@ -481,7 +493,6 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_exit_pipeline_for_bump_commit_for_specified_branches() {
         //Arrange
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> Constants.bumpCommit })
         binding.setVariable("BRANCH_NAME", "release/dev")
 
@@ -501,7 +512,11 @@ class BuilderTests extends BasePipelineTest {
                 '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
                 '      builder.node(groovy.lang.Closure)',
                 '         builder.disableConcurrentBuilds()',
-                '         builder.properties([null])',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
@@ -520,7 +535,6 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_not_exit_pipeline_for_bump_commits_for_unspecified_branches() {
         //Arrange
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> Constants.bumpCommit })
         binding.setVariable("BRANCH_NAME", "feature/dev")
 
@@ -546,7 +560,6 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_not_exit_pipeline_for_bump_commits_for_pull_requests_on_release_branch() {
         //Arrange
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> Constants.bumpCommit })
         binding.setVariable("BRANCH_NAME", "PR-13")
         binding.setVariable("CHANGE_BRANCH", "release/dev")
@@ -573,7 +586,6 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_not_exit_pipeline_for_bump_commits_for_pull_requests_on_hotfix_branch() {
         //Arrange
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> Constants.bumpCommit })
         binding.setVariable("BRANCH_NAME", "PR-13")
         binding.setVariable("CHANGE_BRANCH", "hotfix/dev")
@@ -606,7 +618,6 @@ class BuilderTests extends BasePipelineTest {
                 "develop",
                 "master"
         ]
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> "something" })
 
         for (String branch : branches_to_test) {
@@ -646,7 +657,6 @@ class BuilderTests extends BasePipelineTest {
                 "release/something",
                 "hotfix/something"
         ]
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> "yes" })
 
         for (String branch : branches_to_test) {
@@ -689,7 +699,6 @@ class BuilderTests extends BasePipelineTest {
                 "develop",
                 "master"
         ]
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [Map.class], { c -> "something" })
 
         for (String branch : branches_to_test) {
