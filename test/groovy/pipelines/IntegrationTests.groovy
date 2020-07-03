@@ -2,6 +2,7 @@ package pipelines
 
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import helpers.Pipeline
+import models.Docker
 import models.Gitflow
 import org.junit.Before
 import org.junit.Test
@@ -32,24 +33,35 @@ class IntegrationTests extends BasePipelineTest {
         //Arrange
         binding.setVariable("BRANCH_NAME", "feature/test")
         binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
+        def script = [
+                sh: {
+                    return "1.0.1"
+                }
+        ]
+        def gitflow = new Gitflow(
+                script: script,
+                branch: "develop",
+                is_pull_request: false
+        )
+        def docker_helper = new Docker(
+                script: script,
+                gitflow: gitflow
+        )
 
         //Act
         runScript(pipeline).call(
-                gitflow: new Gitflow(
-                        script: this,
-                        branch: "develop",
-                        is_pull_request: false
-                ),
+                gitflow: gitflow,
                 buildType: 'docker-in-maven',
                 imageName: 'example_image_name',
                 test: 'test.dockerfile',
-                testMounts: '-v test:test'
+                testMounts: '-v test:test',
+                docker_helper: docker_helper
         )
 
         //Assert
         assertStringArray([
                 '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=docker-in-maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test})',
+                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=docker-in-maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, docker_helper=models.Docker@00000000})',
                 '      integration_test.stage(Docker In Maven Build, groovy.lang.Closure)',
                 '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name 12345678-1234-1234-1234-123456789012 -v test:test 12345678-1234-1234-1234-123456789012)',
@@ -66,23 +78,34 @@ class IntegrationTests extends BasePipelineTest {
         //Arrange
         binding.setVariable("BRANCH_NAME", "feature/test")
         binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
+        def script = [
+                sh: {
+                    return "1.0.1"
+                }
+        ]
+        def gitflow = new Gitflow(
+                script: script,
+                branch: "develop",
+                is_pull_request: false
+        )
+        def docker_helper = new Docker(
+                script: script,
+                gitflow: gitflow
+        )
 
         //Act
         runScript(pipeline).call(
-                gitflow: new Gitflow(
-                        script: this,
-                        branch: "develop",
-                        is_pull_request: false
-                ),
+                gitflow: gitflow,
                 buildType: 'maven',
                 imageName: 'example_image_name',
-                test: 'test.dockerfile'
+                test: 'test.dockerfile',
+                docker_helper: docker_helper
         )
 
         //Assert
         assertStringArray([
                 '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=maven, imageName=example_image_name, test=test.dockerfile})',
+                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=maven, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@00000000})',
                 '      integration_test.stage(Maven Build, groovy.lang.Closure)',
                 '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name efe28da0-24ed-4253-a351-467f7587cb71 efe28da0-24ed-4253-a351-467f7587cb71 mvn surefire-report:report)',
@@ -99,23 +122,34 @@ class IntegrationTests extends BasePipelineTest {
         //Arrange
         binding.setVariable("BRANCH_NAME", "feature/test")
         binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
+        def script = [
+                sh: {
+                    return '1.0.1'
+                }
+        ]
+        def gitflow = new Gitflow(
+                script: script,
+                branch: "develop",
+                is_pull_request: false
+        )
+        def docker_helper = new Docker(
+                script: script,
+                gitflow: gitflow
+        )
 
         //Act
         runScript(pipeline).call(
-                gitflow: new Gitflow(
-                        script: this,
-                        branch: "develop",
-                        is_pull_request: false
-                ),
+                gitflow: gitflow,
                 buildType: 'gulp',
                 imageName: 'example_image_name',
-                test: 'test.dockerfile'
+                test: 'test.dockerfile',
+                docker_helper: docker_helper
         )
 
         //Assert
         assertStringArray([
                 '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=gulp, imageName=example_image_name, test=test.dockerfile})',
+                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=gulp, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@00000000})',
                 '      integration_test.stage(Gulp Build, groovy.lang.Closure)',
                 '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name efe28da0-24ed-4253-a351-467f7587cb71 efe28da0-24ed-4253-a351-467f7587cb71 ./node_modules/gulp/bin/gulp test)',
@@ -132,23 +166,34 @@ class IntegrationTests extends BasePipelineTest {
         //Arrange
         binding.setVariable("BRANCH_NAME", "feature/test")
         binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
+        def script = [
+                sh: {
+                    return "1.0.1"
+                }
+        ]
+        def gitflow = new Gitflow(
+                script: script,
+                branch: "develop",
+                is_pull_request: false
+        )
+        def docker_helper = new Docker(
+                script: script,
+                gitflow: gitflow
+        )
 
         //Act
         runScript(pipeline).call(
-                gitflow: new Gitflow(
-                        script: this,
-                        branch: "develop",
-                        is_pull_request: false
-                ),
+                gitflow: gitflow,
                 buildType: 'webpack',
                 imageName: 'example_image_name',
-                test: 'test.dockerfile'
+                test: 'test.dockerfile',
+                docker_helper: docker_helper
         )
 
         //Assert
         assertStringArray([
                 '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@4628b1d3, buildType=webpack, imageName=example_image_name, test=test.dockerfile})',
+                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=webpack, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@00000000})',
                 '      integration_test.stage(Webpack Build, groovy.lang.Closure)',
                 '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
                 '         integration_test.sh(docker run --name efe28da0-24ed-4253-a351-467f7587cb71 efe28da0-24ed-4253-a351-467f7587cb71 npm test)',
@@ -167,27 +212,38 @@ class IntegrationTests extends BasePipelineTest {
         binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [], {c -> "Not required"})
         helper.registerAllowedMethod("sh", [Map.class], {c -> "Not required"})
+        def script = [
+                sh: { Map<String, String> items ->
+                    if(items['script'] == './get_parent_branch.sh') {
+                        return 'test'
+                    } else {
+                        return '1.0.1'
+                    }
+                }
+        ]
+        def gitflow = new Gitflow(
+                script: script,
+                branch: "develop",
+                is_pull_request: true
+        )
+        def docker_helper = new Docker(
+                script: script,
+                gitflow: gitflow
+        )
 
         //Act
         runScript(pipeline).call(
-                gitflow: new Gitflow(
-                        script: [
-                                sh: {
-                                    return "test"
-                                }
-                        ],
-                        branch: "develop",
-                        is_pull_request: true
-                ),
+                gitflow: gitflow,
                 buildType: 'maven',
                 imageName: 'example_image_name',
-                test: 'test.dockerfile'
+                test: 'test.dockerfile',
+                docker_helper: docker_helper
         )
 
         //Assert
         assertStringArray([
                 '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@8ab78bc, buildType=maven, imageName=example_image_name, test=test.dockerfile})',
+                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=maven, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@00000000})',
                 '      integration_test.echo(Lookahead merge from base branch test to develop)',
                 '      integration_test.sh(\n                git checkout test\n                git pull origin test\n                git checkout develop\n                git merge test\n            )',
                 '      integration_test.stage(Maven Build, groovy.lang.Closure)',
