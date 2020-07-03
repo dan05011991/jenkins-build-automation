@@ -23,12 +23,12 @@ pipeline {
         string(
             name: 'Release', 
             defaultValue: 'DEFAULT', 
-            description: 'This is the release branch you wish to finish. This will merge the changes into master and develop'
+            description: 'This is the release label you wish to finish. This will merge the changes into master and develop'
         )
     }
 
     environment {
-        SOURCE_BRANCH = "${Release}"
+        SOURCE_BRANCH = "release/${Release}"
         INTEGRATION_BRANCH = 'develop'
         OPERATIONAL_BRANCH = 'master'
     }
