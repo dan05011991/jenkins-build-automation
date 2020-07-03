@@ -65,7 +65,7 @@ node {
             sh("git push origin master")
         }
 
-        sh("cat ${newVersion} > version")
+        sh("echo ${newVersion} > version")
         archiveArtifacts artifacts: 'version', fingerprint: true
     }
 }
