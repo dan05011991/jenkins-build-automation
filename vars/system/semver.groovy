@@ -4,6 +4,8 @@ import java.util.regex.Pattern
 
 node {
     properties([
+        disableConcurrentBuilds(),
+        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '5')),
         parameters ([
             string(
                     name: 'PROJECT_KEY',
