@@ -3,14 +3,14 @@ pipeline {
 
     parameters {
         choice(
-            name: 'Project', 
-            choices: ['dan05011991/barebones-react','dan05011991/demo-application-backend','vickeryw/bandpCore'], 
-            description: ''
+                name: 'Project',
+                choices: ['dan05011991/barebones-react', 'dan05011991/demo-application-backend', 'vickeryw/bandpCore'],
+                description: ''
         )
         string(
-            name: 'Label', 
-            defaultValue: 'DEFAULT', 
-            description: 'This is unique name which will be prefixed on the end of the branch e.g. release/mylabel'
+                name: 'Label',
+                defaultValue: 'DEFAULT',
+                description: 'This is unique name which will be prefixed on the end of the branch e.g. release/mylabel'
         )
     }
 
