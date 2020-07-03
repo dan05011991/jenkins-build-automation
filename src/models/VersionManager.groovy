@@ -1,5 +1,7 @@
 package models
 
+import com.cloudbees.groovy.cps.NonCPS
+
 class VersionManager {
     private def final script
     private final Map<String, String> map
@@ -97,6 +99,7 @@ class VersionManager {
                 .trim()
     }
 
+    @NonCPS
     private def getInput(Map<String, ?> items, String key) {
         def result = items.get(key)
 
@@ -107,6 +110,7 @@ class VersionManager {
         return result
     }
 
+    @NonCPS
     private Map<String, String> readFile(fileName) {
         def map = [:]
         def file = new File(fileName)
@@ -116,7 +120,7 @@ class VersionManager {
             def items = "${line}".split('=')
 
             if(items.length != 2) {
-                throw new Exception("Incorrect format of version file")
+                throw new Exception(String.format("Incorrect format of version file with line %s in file %s", line, fileName))
             }
 
             map[items[0]] = items[1]

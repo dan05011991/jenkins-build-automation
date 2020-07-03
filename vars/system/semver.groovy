@@ -26,36 +26,48 @@ node {
         )
     }
 
-    def manager = new VersionManager(
-            script: this,
-            projectKey: "${PROJECT_KEY}",
-            incrementType: "${RELEASE_TYPE}",
-            closestGitTag: "${GIT_TAG}",
-            parentHash: "${PARENT_HASH}",
-            baseBranch: "${BASE_BRANCH}"
+    stage('Setup') {
+        sh 'git config --global user.email "jenkins@bnp.com"'
+        sh 'git config --global user.name "Jenkins Admin"'
 
-    )
+        cleanWs()
 
-    cleanWs()
-    
-    git(
-            branch: "master",
-            url: "git@github.com:dan05011991/versioning.git",
-            credentialsId: 'ssh'
-    )
-    
-    createScript('semver.sh')
+        git(
+                branch: "master",
+                url: "git@github.com:dan05011991/versioning.git",
+                credentialsId: 'ssh'
+        )
 
-    String newVersion = manager.updateVersion()
+        createScript('semver.sh')
+    }
 
-    sh("rm semver.sh")
+    stage('Update') {
+        def manager = new VersionManager(
+                script: this,
+                projectKey: "${pwd()}/${PROJECT_KEY}",
+                incrementType: "${RELEASE_TYPE}",
+                closestGitTag: "${GIT_TAG}",
+                parentHash: "${PARENT_HASH}",
+                baseBranch: "${BASE_BRANCH}"
 
-    sh("git add ${PROJECT_KEY}")
-    sh("git commit -m \"Bumped version for ${PROJECT_KEY}\"")
-    sh("git push origin master")
+        )
 
-    sh("cat ${newVersion} > version")
-    archiveArtifacts artifacts: 'version', fingerprint: true
+        newVersion = manager.updateVersion()
+    }
+
+    stage('Save') {
+        sh("rm semver.sh")
+
+        sh("git add ${PROJECT_KEY}")
+        sh("git commit -m \"Bumped version for ${PROJECT_KEY}\"")
+
+        sshagent(credentials: ['ssh']) {
+            sh("git push origin master")
+        }
+
+        sh("cat ${newVersion} > version")
+        archiveArtifacts artifacts: 'version', fingerprint: true
+    }
 }
 
 def check_input(input) {
@@ -65,7 +77,7 @@ def check_input(input) {
 }
 
 def createScript(scriptName) {
-    def scriptContent = libraryResource "com/corp/pipeline/scripts/${scriptName}"
+    def scriptContent = libraryResource "com/pipeline/scripts/${scriptName}"
     writeFile file: "${scriptName}", text: scriptContent
     sh "chmod +x ${scriptName}"
 }

@@ -71,6 +71,12 @@
             <version>1.395</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.cloudbees</groupId>
+            <artifactId>groovy-cps</artifactId>
+            <version>1.16</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
