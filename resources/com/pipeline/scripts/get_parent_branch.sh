@@ -7,3 +7,4 @@ git show-branch \
 | head -n1 \
 | sed "s/^.*\[//" \
 | sed "s/\^.*//"
+

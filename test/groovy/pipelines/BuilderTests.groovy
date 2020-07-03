@@ -632,7 +632,7 @@ class BuilderTests extends BasePipelineTest {
                 call.methodName == "integration_test"
             }.any { call ->
                 return CustomAssertHelper.assertEquals(
-                        "{buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000}",
+                        "{imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000, docker_helper=models.Docker@00000000}",
                         callArgsToString(call))
             })
             assertJobStatusSuccess()

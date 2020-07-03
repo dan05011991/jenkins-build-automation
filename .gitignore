@@ -40,3 +40,4 @@ output
 auto-angular-application
 tmp
 coverage-reports
+# resources/testFile
