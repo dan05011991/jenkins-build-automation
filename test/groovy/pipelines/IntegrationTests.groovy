@@ -6,8 +6,6 @@ import models.Gitflow
 import org.junit.Before
 import org.junit.Test
 
-import static com.lesfurets.jenkins.unit.global.lib.LibraryConfiguration.library
-import static com.lesfurets.jenkins.unit.global.lib.ProjectSource.projectSource
 import static helpers.CustomAssertHelper.assertStringArray
 
 class IntegrationTests extends BasePipelineTest {

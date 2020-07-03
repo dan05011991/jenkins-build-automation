@@ -8,11 +8,8 @@ import org.junit.Before
 import org.junit.Test
 
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
-import static com.lesfurets.jenkins.unit.global.lib.LibraryConfiguration.library
-import static com.lesfurets.jenkins.unit.global.lib.ProjectSource.projectSource
-
-import static org.junit.Assert.*
 import static helpers.CustomAssertHelper.assertStringArray
+import static org.junit.Assert.*
 
 class BuilderTests extends BasePipelineTest {
 

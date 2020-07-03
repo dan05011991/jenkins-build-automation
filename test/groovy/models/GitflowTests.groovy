@@ -3,6 +3,7 @@ package models
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import helpers.Constants
 import org.junit.Test
+
 import static org.junit.Assert.*
 
 class GitflowTests extends BasePipelineTest {
