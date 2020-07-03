@@ -82,7 +82,7 @@ class PackageCandidateTests extends BasePipelineTest {
                 '         package_candidate.sh(git add pom.xml)',
                 '         package_candidate.sh(git commit -m "[Automated commit: version bump]")',
                 '      package_candidate.stage(Push Updates, groovy.lang.Closure)',
-                '         package_candidate.sh(docker push hub.docker.com/example_image_name:1.0.0-release-candidate)',
+                '         package_candidate.sh(docker push index.docker.io/example_image_name:1.0.0-release-candidate)',
                 '         package_candidate.sshagent({credentials=[ssh]}, groovy.lang.Closure)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
@@ -138,7 +138,7 @@ class PackageCandidateTests extends BasePipelineTest {
                 '   package_candidate.call({gitflow=models.Gitflow@1a2e2935, docker_helper=models.Docker@1b9ea3e3, buildType=maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test})',
                 '      package_candidate.sh({script=mvn help:evaluate -Dexpression=project.version -q -DforceStdout, returnStdout=true})',
                 '      package_candidate.stage(Docker Candidate Build, groovy.lang.Closure)',
-                '         package_candidate.sh(docker build -t hub.docker.com/example_image_name:1.0.0-release-candidate .)',
+                '         package_candidate.sh(docker build -t index.docker.io/example_image_name:1.0.0-release-candidate .)',
                 '      package_candidate.stage(Prepare project for next iteration, groovy.lang.Closure)',
                 '         package_candidate.sh(git tag -a 1.0.0 -m "Release 1.0.0")',
                 '         package_candidate.sh(mvn versions:set -DnewVersion=1.0.0-SNAPSHOT)',
@@ -146,7 +146,7 @@ class PackageCandidateTests extends BasePipelineTest {
                 '         package_candidate.sh(git add pom.xml)',
                 '         package_candidate.sh(git commit -m "[Automated commit: version bump]")',
                 '      package_candidate.stage(Push Updates, groovy.lang.Closure)',
-                '         package_candidate.sh(docker push hub.docker.com/example_image_name:1.0.0-release-candidate)',
+                '         package_candidate.sh(docker push index.docker.io/example_image_name:1.0.0-release-candidate)',
                 '         package_candidate.sshagent({credentials=[ssh]}, groovy.lang.Closure)',
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
@@ -202,11 +202,11 @@ class PackageCandidateTests extends BasePipelineTest {
                 '   package_candidate.call({gitflow=models.Gitflow@1a2e2935, docker_helper=models.Docker@1b9ea3e3, buildType=gulp, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test})',
                 '      package_candidate.sh({script=mvn help:evaluate -Dexpression=project.version -q -DforceStdout, returnStdout=true})',
                 '      package_candidate.stage(Docker Candidate Build, groovy.lang.Closure)',
-                '         package_candidate.sh(docker build -t hub.docker.com/example_image_name:1.0.0-release-candidate .)',
+                '         package_candidate.sh(docker build -t index.docker.io/example_image_name:1.0.0-release-candidate .)',
                 '      package_candidate.stage(Prepare project for next iteration, groovy.lang.Closure)',
                 '         package_candidate.sh(git tag -a 1.0.0 -m "Release 1.0.0")',
                 '      package_candidate.stage(Push Updates, groovy.lang.Closure)',
-                '         package_candidate.sh(docker push hub.docker.com/example_image_name:1.0.0-release-candidate)',
+                '         package_candidate.sh(docker push index.docker.io/example_image_name:1.0.0-release-candidate)',
                 '         package_candidate.sshagent({credentials=[ssh]}, groovy.lang.Closure)',
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
@@ -262,11 +262,11 @@ class PackageCandidateTests extends BasePipelineTest {
                 '   package_candidate.call({gitflow=models.Gitflow@1a2e2935, docker_helper=models.Docker@1b9ea3e3, buildType=webpack, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test})',
                 '      package_candidate.sh({script=mvn help:evaluate -Dexpression=project.version -q -DforceStdout, returnStdout=true})',
                 '      package_candidate.stage(Docker Candidate Build, groovy.lang.Closure)',
-                '         package_candidate.sh(docker build -t hub.docker.com/example_image_name:1.0.0-release-candidate .)',
+                '         package_candidate.sh(docker build -t index.docker.io/example_image_name:1.0.0-release-candidate .)',
                 '      package_candidate.stage(Prepare project for next iteration, groovy.lang.Closure)',
                 '         package_candidate.sh(git tag -a 1.0.0 -m "Release 1.0.0")',
                 '      package_candidate.stage(Push Updates, groovy.lang.Closure)',
-                '         package_candidate.sh(docker push hub.docker.com/example_image_name:1.0.0-release-candidate)',
+                '         package_candidate.sh(docker push index.docker.io/example_image_name:1.0.0-release-candidate)',
                 '         package_candidate.sshagent({credentials=[ssh]}, groovy.lang.Closure)',
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
