@@ -1,6 +1,15 @@
 pipeline {
     agent any
 
+    options {
+        buildDiscarder(logRotator(
+                daysToKeepStr: '7',
+                numToKeepStr: '5',
+                artifactDaysToKeepStr: '5',
+                artifactNumToKeepStr: '5'
+        ))
+    }
+
     parameters {
         choice(
             name: 'Project',
