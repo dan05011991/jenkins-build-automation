@@ -51,7 +51,8 @@ class VersionManager {
             if(map.containsKey(key)) {
                 map[key] = callSemVerScript('p', map[key])
             } else {
-                map[lookupKey] = map[key] = callSemVerScript('m', map[lookupKey])
+                map[key] = callSemVerScript('m', map[lookupKey])
+                map[lookupKey] = map[key]
             }
             return map[key]
         }
