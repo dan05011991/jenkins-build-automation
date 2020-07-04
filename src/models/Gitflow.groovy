@@ -99,7 +99,7 @@ class Gitflow {
         }
 
         // Retrieves parent branch and then gets the hash when it branched off
-        def parentHash = getNearestParentHash(this.getLookaheadBranch(), this.branch)
+        def parentHash = '123'//getNearestParentHash(this.getLookaheadBranch(), this.branch)
 
         def type = getIncrementType()
         def job = script.build(
@@ -139,8 +139,9 @@ class Gitflow {
                 <(git rev-list --first-parent \"\${currentBranch:-HEAD}\") \
                 | head -1
             """,
-                returnStdout: true)
-                .trim()
+            returnStdout: true)
+            .trim()
+
         if(result == null || result.length() == 0) {
             throw new Exception("Unable to retrieve hash from parent branch ${parentBranch} for base ${baseBranch}")
         }
