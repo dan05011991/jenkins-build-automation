@@ -98,13 +98,18 @@ class Gitflow {
                          .replace("/", "_")
         }
 
+        // Retrieves parent branch and then gets the hash when it branched off
+        def parentHash = getNearestParentHash(this.getLookaheadBranch(), this.branch)
+
         def type = getIncrementType()
         def job = script.build(
-                job: 'SemVer',
+                job: 'System_Jobs/SemVer',
                 parameters: [
                     script.string(name: 'PROJECT_KEY', value: "${key}"),
                     script.string(name: 'RELEASE_TYPE', value: "${type}"),
-                    script.string(name: 'GIT_TAG', value: "${tag}")
+                    script.string(name: 'GIT_TAG', value: "${tag}"),
+                    script.string(name: 'PARENT_HASH', value: "${parentHash}"),
+                    script.string(name: 'BASE_BRANCH', value: "${this.branch}")
                 ],
                 propagate: true,
                 wait: true)
@@ -121,6 +126,25 @@ class Gitflow {
         ).trim()
 
         return version
+    }
+
+    String getNearestParentHash(String parentBranch, String baseBranch) {
+        def result = script.sh(
+                script: """
+                parentBranch=origin/${parentBranch} \
+                && currentBranch=${baseBranch} \
+                && diff --old-line-format='' \
+                --new-line-format='' \
+                <(git rev-list --first-parent \"\${parentBranch:-master}\") \
+                <(git rev-list --first-parent \"\${currentBranch:-HEAD}\") \
+                | head -1
+            """,
+                returnStdout: true)
+                .trim()
+        if(result == null || result.length() == 0) {
+            throw new Exception("Unable to retrieve hash from parent branch ${parentBranch} for base ${baseBranch}")
+        }
+        return result
     }
 
     def isBumpCommit() {
