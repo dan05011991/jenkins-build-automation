@@ -98,6 +98,7 @@ class Gitflow {
                          .replace("/", "_")
         }
 
+        //TODO: FIX THIS
         // Retrieves parent branch and then gets the hash when it branched off
         def parentHash = '123'//getNearestParentHash(this.getLookaheadBranch(), this.branch)
 
@@ -116,7 +117,7 @@ class Gitflow {
 
         script.copyArtifacts(
                 fingerprintArtifacts: true,
-                projectName: 'SemVer',
+                projectName: 'System_Jobs/SemVer',
                 selector: script.specific("${job.number}")
         )
 
