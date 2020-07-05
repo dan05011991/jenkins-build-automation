@@ -33,10 +33,8 @@ def call(config) {
     }
 
     stage('Push Updates') {
-        withDockerRegistry([credentialsId: 'dev-docker-repo']) {
-            sh "docker push ${config.docker_helper.developerRepo}/${config.imageName}:${docker_tag_version}"
-        }
-
+        sh "docker push ${config.docker_helper.developerRepo}/${config.imageName}:${docker_tag_version}"
+        
         sshagent(credentials: ['ssh']) {
             sh "git push origin ${config.gitflow.getSourceBranch()}"
             sh "git push origin ${project_version}"
