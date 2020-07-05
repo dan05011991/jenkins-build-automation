@@ -74,6 +74,7 @@ class Gitflow {
     }
 
     def getParentBranch() {
+        sh "${pwd}"
         def branch = script.sh(
                 script: "./get_parent_branch.sh",
                 returnStdout: true).trim()
