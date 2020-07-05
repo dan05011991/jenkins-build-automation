@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo "Determining parent branch ..."
+pwd
 git show-branch -a \
 | sed "s/].*//" \
 | grep "\*" \
