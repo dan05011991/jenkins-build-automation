@@ -1,5 +1,7 @@
 package models
 
+import com.cloudbees.groovy.cps.NonCPS
+
 class Gitflow {
     private final def script
     private final String source
@@ -19,6 +21,7 @@ class Gitflow {
         validateGitflow()
     }
 
+    @NonCPS
     def validateGitflow() {
         if(!isMainBranch() && !isPackageBranch() && !isIntegrationBranch()) {
             throw new Exception("Invalid branch syntax. Must follow standard GitFlow process")
@@ -59,30 +62,37 @@ class Gitflow {
         }
     }
 
+    @NonCPS
     def isMasterBranch(branch = this.source) {
         return branch == 'master'
     }
 
+    @NonCPS
     def isDevelopBranch(branch = this.source) {
         return branch == 'develop'
     }
 
+    @NonCPS
     def isHotfixBranch(String branch = this.source) {
         return hasPrefix(branch, 'hotfix/')
     }
 
+    @NonCPS
     def isReleaseBranch(String branch = this.source) {
         return hasPrefix(branch, 'release/')
     }
 
+    @NonCPS
     def isBugfixBranch(String branch = this.source) {
         return hasPrefix(branch, 'bugfix/')
     }
 
+    @NonCPS
     def isFeatureBranch(String branch = this.source) {
         return hasPrefix(branch, 'feature/')
     }
 
+    @NonCPS
     private boolean hasPrefix(String haystack, String needle) {
         return haystack.startsWith(needle) && ((haystack.length() - needle.length()) > 0)
     }
