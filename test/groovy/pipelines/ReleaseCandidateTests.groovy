@@ -31,7 +31,7 @@ class ReleaseCandidateTests extends BasePipelineTest {
 
         def gitflow = new Gitflow(
                 script: this,
-                branch: "master",
+                source: "master",
                 is_pull_request: false
         )
         def docker_helper = new Docker(

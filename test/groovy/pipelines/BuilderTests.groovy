@@ -41,7 +41,7 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
-    void should_execute_pipeline_successfully_and_follow_integration_route() {
+    void should_follow_integration_route_for_feature_branches() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "feature/test")
 
@@ -70,6 +70,7 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
                 '            builder.echo(Source branch: feature/test)',
+                '            builder.echo(Target branch: null)',
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
@@ -84,7 +85,51 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
-    void should_execute_pipeline_successfully_and_follow_release_route() {
+    void should_follow_integration_route_for_bugfix_branches() {
+        //Arrange
+        binding.setVariable("BRANCH_NAME", "bugfix/test")
+
+        //Act
+        runScript(pipeline).call(
+                buildType: 'maven',
+                deploymentRepo: 'example_url',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                testMounts: '-v test:test',
+                projectKey: 'example_key'
+        )
+
+        //Assert
+        assertStringArray([
+                '   builder.run()',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
+                '      builder.node(groovy.lang.Closure)',
+                '         builder.disableConcurrentBuilds()',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
+                '         builder.stage(Clean, groovy.lang.Closure)',
+                '            builder.cleanWs()',
+                '               builder.echo(Workspace cleaned)',
+                '            builder.echo(Source branch: bugfix/test)',
+                '            builder.echo(Target branch: null)',
+                '            builder.echo(Source Url: [test])',
+                '            builder.echo(Is Pull Request?: false)',
+                '         builder.stage(Pipeline setup, groovy.lang.Closure)',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
+                '               builder.echo(Parallel job)',
+                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@1b5bc39d})',
+                '            builder.echo(update_project_version pipeline called)',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@1b5bc39d, docker_helper=models.Docker@34abdee4})',
+                '            builder.echo(Integration test pipeline called)'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
+    void should_follow_release_route() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "release/test")
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
@@ -114,6 +159,7 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
                 '            builder.echo(Source branch: release/test)',
+                '            builder.echo(Target branch: null)',
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
@@ -132,7 +178,60 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
-    void should_execute_pipeline_successfully_deploy() {
+    void should_follow_hotfix_route() {
+        //Arrange
+        binding.setVariable("BRANCH_NAME", "hotfix/test")
+        helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
+
+        //Act
+        runScript(pipeline).call(
+                buildType: 'maven',
+                deploymentRepo: 'example_url',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                testMounts: '-v test:test',
+                projectKey: 'example_key'
+        )
+
+        //Assert
+        assertStringArray([
+                '   builder.run()',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
+                '      builder.node(groovy.lang.Closure)',
+                '         builder.disableConcurrentBuilds()',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email \"jenkins@bnp.com\")',
+                '         builder.sh(git config --global user.name \"Jenkins Admin\")',
+                '         builder.stage(Clean, groovy.lang.Closure)',
+                '            builder.cleanWs()',
+                '               builder.echo(Workspace cleaned)',
+                '            builder.echo(Source branch: hotfix/test)',
+                '            builder.echo(Target branch: null)',
+                '            builder.echo(Source Url: [test])',
+                '            builder.echo(Is Pull Request?: false)',
+                '         builder.stage(Pipeline setup, groovy.lang.Closure)',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
+                '               builder.echo(Parallel job)',
+                '         builder.sh({script=git log -1, returnStdout=true})',
+                '         builder.sh({script=git log -1, returnStdout=true})',
+                '         builder.sh({script=git fetch --prune})',
+                '         builder.sh({script=\n                if [ \"\$(git diff origin/master 2> /dev/null)\" ]; then \n                    echo \"yes\"; \n                fi\n            , returnStdout=true})',
+                '         builder.sh({script=git log -1, returnStdout=true})',
+                '         builder.sh({script=git fetch --prune})',
+                '         builder.sh({script=\n                if [ \"\$(git diff origin/master 2> /dev/null)\" ]; then \n                    echo \"yes\"; \n                fi\n            , returnStdout=true})',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@2970a5bc, docker_helper=models.Docker@50305a})',
+                '            builder.echo(Integration test pipeline called)',
+                '         builder.sh({script=git log -1, returnStdout=true})',
+                '         builder.sh({script=git fetch --prune})',
+                '         builder.sh({script=\n                if [ \"\$(git diff origin/master 2> /dev/null)\" ]; then \n                    echo \"yes\"; \n                fi\n            , returnStdout=true})'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
+    void should_follow_master_route() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "master")
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
@@ -162,6 +261,7 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
                 '            builder.echo(Source branch: master)',
+                '            builder.echo(Target branch: null)',
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
@@ -176,10 +276,9 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
-    void should_execute_pipeline_successfully_and_follow_pull_request_route_for_release_branch() {
+    void should_follow_develop_route() {
         //Arrange
-        binding.setVariable("BRANCH_NAME", "PR-13")
-        binding.setVariable("CHANGE_BRANCH", "release/test")
+        binding.setVariable("BRANCH_NAME", "develop")
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         //Act
@@ -206,24 +305,72 @@ class BuilderTests extends BasePipelineTest {
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
-                '            builder.echo(Source branch: release/test)',
+                '            builder.echo(Source branch: develop)',
+                '            builder.echo(Target branch: null)',
+                '            builder.echo(Source Url: [test])',
+                '            builder.echo(Is Pull Request?: false)',
+                '         builder.stage(Pipeline setup, groovy.lang.Closure)',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
+                '               builder.echo(Parallel job)',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000, docker_helper=models.Docker@00000000})',
+                '            builder.echo(Integration test pipeline called)',
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
+    void should_follow_pull_request_route_for_feature_branch() {
+        //Arrange
+        binding.setVariable("BRANCH_NAME", "PR-13")
+        binding.setVariable("CHANGE_BRANCH", "feature/test")
+        binding.setVariable("CHANGE_TARGET", "develop")
+        helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
+
+        //Act
+        runScript(pipeline).call(
+                buildType: 'maven',
+                deploymentRepo: 'example_url',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                testMounts: '-v test:test',
+                projectKey: 'example_key'
+        )
+
+        //Assert
+        assertStringArray([
+                '   builder.run()',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
+                '      builder.node(groovy.lang.Closure)',
+                '         builder.disableConcurrentBuilds()',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
+                '         builder.stage(Clean, groovy.lang.Closure)',
+                '            builder.cleanWs()',
+                '               builder.echo(Workspace cleaned)',
+                '            builder.echo(Source branch: feature/test)',
+                '            builder.echo(Target branch: develop)',
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: true)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
                 '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
-                '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000, docker_helper=models.Docker@00000000})',
+                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@2970a5bc})',
+                '            builder.echo(update_project_version pipeline called)',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@2970a5bc, docker_helper=models.Docker@6d511b5f})',
                 '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
 
     @Test
-    void should_execute_pipeline_successfully_and_follow_pull_request_route_for_hotfix_branch() {
+    void should_follow_pull_request_route_for_bugfix_on_hotfix_branch() {
         //Arrange
         binding.setVariable("BRANCH_NAME", "PR-13")
-        binding.setVariable("CHANGE_BRANCH", "hotfix/test")
+        binding.setVariable("CHANGE_BRANCH", "bugfix/test")
+        binding.setVariable("CHANGE_TARGET", "hotfix/test")
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
         //Act
@@ -250,14 +397,63 @@ class BuilderTests extends BasePipelineTest {
                 '         builder.stage(Clean, groovy.lang.Closure)',
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
-                '            builder.echo(Source branch: hotfix/test)',
+                '            builder.echo(Source branch: bugfix/test)',
+                '            builder.echo(Target branch: hotfix/test)',
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: true)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
                 '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
                 '               builder.echo(Parallel job)',
-                '         builder.sh({script=git log -1, returnStdout=true})',
-                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@00000000, docker_helper=models.Docker@00000000})',
+                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@2970a5bc})',
+                '            builder.echo(update_project_version pipeline called)',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@2970a5bc, docker_helper=models.Docker@6d511b5f})',
+                '            builder.echo(Integration test pipeline called)'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
+    void should_follow_pull_request_route_for_bugfix_on_release_branch() {
+        //Arrange
+        binding.setVariable("BRANCH_NAME", "PR-13")
+        binding.setVariable("CHANGE_BRANCH", "bugfix/test")
+        binding.setVariable("CHANGE_TARGET", "release/test")
+        helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
+
+        //Act
+        runScript(pipeline).call(
+                buildType: 'maven',
+                deploymentRepo: 'example_url',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                testMounts: '-v test:test',
+                projectKey: 'example_key'
+        )
+
+        //Assert
+        assertStringArray([
+                '   builder.run()',
+                '   builder.call({buildType=maven, deploymentRepo=example_url, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, projectKey=example_key})',
+                '      builder.node(groovy.lang.Closure)',
+                '         builder.disableConcurrentBuilds()',
+                '         builder.logRotator({daysToKeepStr=7, numToKeepStr=5})',
+                '         builder.buildDiscarder(null)',
+                '         builder.properties([null, null])',
+                '         builder.sh(git config --global user.email "jenkins@bnp.com")',
+                '         builder.sh(git config --global user.name "Jenkins Admin")',
+                '         builder.stage(Clean, groovy.lang.Closure)',
+                '            builder.cleanWs()',
+                '               builder.echo(Workspace cleaned)',
+                '            builder.echo(Source branch: bugfix/test)',
+                '            builder.echo(Target branch: release/test)',
+                '            builder.echo(Source Url: [test])',
+                '            builder.echo(Is Pull Request?: true)',
+                '         builder.stage(Pipeline setup, groovy.lang.Closure)',
+                '            builder.parallel({Checkout Project=groovy.lang.Closure, Create pipeline scripts=groovy.lang.Closure, Developer Docker login=groovy.lang.Closure, Release Docker login=groovy.lang.Closure})',
+                '               builder.echo(Parallel job)',
+                '         builder.update_project_version({projectKey=example_key, buildType=maven, gitflow=models.Gitflow@2970a5bc})',
+                '            builder.echo(update_project_version pipeline called)',
+                '         builder.integration_test({imageName=example_image_name, buildType=maven, test=test.dockerfile, testMounts=-v test:test, gitflow=models.Gitflow@2970a5bc, docker_helper=models.Docker@6d511b5f})',
                 '            builder.echo(Integration test pipeline called)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
@@ -303,25 +499,43 @@ class BuilderTests extends BasePipelineTest {
         }
     }
 
-    @Test(expected = Exception.class)
+    @Test
     void should_reject_branches_for_violating_gitflow_in_pull_request_scenario() {
         //Arrange
-        String[] branches_to_test = [
-                "featurea/something",
-                "releasea/something",
-                "bugfixa/something",
-                "hotfixa/something",
-                "something",
-                "developa",
-                "mastera"
-        ]
+        List<Tuple> tests = new ArrayList<>()
+        tests.add(new Tuple('hotfix/something', 'master'))
+        tests.add(new Tuple('hotfix/something', 'develop'))
+        tests.add(new Tuple('hotfix/something', 'release/test'))
+        tests.add(new Tuple('hotfix/something', 'hotfix/test'))
+        tests.add(new Tuple('hotfix/something', 'bugfix/test'))
+
+        tests.add(new Tuple('release/something', 'master'))
+        tests.add(new Tuple('release/something', 'develop'))
+        tests.add(new Tuple('release/something', 'release/test'))
+        tests.add(new Tuple('release/something', 'hotfix/test'))
+        tests.add(new Tuple('release/something', 'bugfix/test'))
+
+        tests.add(new Tuple('feature/something', 'master'))
+        tests.add(new Tuple('feature/something', 'release/test'))
+        tests.add(new Tuple('feature/something', 'hotfix/test'))
+        tests.add(new Tuple('feature/something', 'bugfix/test'))
+
+        tests.add(new Tuple('bugfix/something', 'master'))
+        tests.add(new Tuple('bugfix/something', 'develop'))
+        tests.add(new Tuple('bugfix/something', 'feature/test'))
+        tests.add(new Tuple('bugfix/something', 'bugfix/test'))
+
+        tests.add(new Tuple('master', 'develop'))
+        tests.add(new Tuple('develop', 'master'))
+
         String errorMessage = "Invalid branch syntax. Must follow standard GitFlow process"
 
-        for(String branch : branches_to_test) {
+        for(String test : tests) {
             helper.clearCallStack()
 
             binding.setVariable("BRANCH_NAME", "PR-13")
-            binding.setVariable("CHANGE_BRANCH", branch)
+            binding.setVariable("CHANGE_BRANCH", test[0])
+            binding.setVariable("CHANGE_TARGET", test[1])
 
             //Act
             try {
@@ -337,7 +551,7 @@ class BuilderTests extends BasePipelineTest {
             catch (Exception ex) {
                 //Assert
                 assertEquals(errorMessage, ex.getMessage())
-                throw ex
+                continue
             }
 
             fail("Pipeline should throw exception")
@@ -380,21 +594,18 @@ class BuilderTests extends BasePipelineTest {
     @Test
     void should_not_reject_branches_in_pull_request_scenario() {
         //Arrange
-        String[] branches_to_test = [
-                "feature/something",
-                "release/something",
-                "bugfix/something",
-                "hotfix/something",
-                "develop",
-                "master"
-        ]
+        List<Tuple> tests = new ArrayList<>()
+        tests.add(new Tuple('feature/something', 'develop'))
+        tests.add(new Tuple('bugfix/something', 'release/test'))
+        tests.add(new Tuple('bugfix/something', 'hotfix/test'))
         helper.registerAllowedMethod("sh", [Map.class], {c -> "this is not a bump"})
 
-        for (String branch : branches_to_test) {
+        for (Tuple test : tests) {
             helper.clearCallStack()
 
             binding.setVariable("BRANCH_NAME", "PR-13")
-            binding.setVariable("CHANGE_BRANCH", branch)
+            binding.setVariable("CHANGE_BRANCH", test[0])
+            binding.setVariable("CHANGE_TARGET", test[1])
 
             //Act
             runScript(pipeline).call(
@@ -442,6 +653,7 @@ class BuilderTests extends BasePipelineTest {
         helper.registerAllowedMethod("sh", [Map.class], { c -> "this is not a bump" })
         binding.setVariable("BRANCH_NAME", "PR-12")
         binding.setVariable("CHANGE_BRANCH", "feature/dev")
+        binding.setVariable("CHANGE_TARGET", "develop")
 
         //Act
         runScript(pipeline).call(
@@ -518,6 +730,7 @@ class BuilderTests extends BasePipelineTest {
                 '            builder.cleanWs()',
                 '               builder.echo(Workspace cleaned)',
                 '            builder.echo(Source branch: release/dev)',
+                '            builder.echo(Target branch: null)',
                 '            builder.echo(Source Url: [test])',
                 '            builder.echo(Is Pull Request?: false)',
                 '         builder.stage(Pipeline setup, groovy.lang.Closure)',
@@ -555,11 +768,12 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
-    void should_not_exit_pipeline_for_bump_commits_for_pull_requests_on_release_branch() {
+    void should_not_exit_pipeline_for_bump_commits_for_pull_requests_from_bugfix_to_hotfix_branch() {
         //Arrange
         helper.registerAllowedMethod("sh", [Map.class], { c -> Constants.bumpCommit })
         binding.setVariable("BRANCH_NAME", "PR-13")
-        binding.setVariable("CHANGE_BRANCH", "release/dev")
+        binding.setVariable("CHANGE_BRANCH", "bugfix/dev")
+        binding.setVariable("CHANGE_TARGET", "hotfix/test")
 
         //Act
         runScript(pipeline).call(
@@ -581,11 +795,12 @@ class BuilderTests extends BasePipelineTest {
     }
 
     @Test
-    void should_not_exit_pipeline_for_bump_commits_for_pull_requests_on_hotfix_branch() {
+    void should_not_exit_pipeline_for_bump_commits_for_pull_requests_from_bugfix_to_release_branch() {
         //Arrange
         helper.registerAllowedMethod("sh", [Map.class], { c -> Constants.bumpCommit })
         binding.setVariable("BRANCH_NAME", "PR-13")
-        binding.setVariable("CHANGE_BRANCH", "hotfix/dev")
+        binding.setVariable("CHANGE_BRANCH", "bugfix/dev")
+        binding.setVariable("CHANGE_TARGET", "release/test")
 
         //Act
         runScript(pipeline).call(
@@ -735,6 +950,7 @@ class BuilderTests extends BasePipelineTest {
         assertStringArray([
                 '   builder.run()',
                 '   builder.createScript(test.sh)',
+                '      builder.echo(Creating pipeline script test.sh)',
                 '      builder.libraryResource(com/pipeline/scripts/test.sh)',
                 '      builder.writeFile({file=test.sh, text=#!/usr/bin/env bash\n})',
                 '         builder.echo(Write file)',

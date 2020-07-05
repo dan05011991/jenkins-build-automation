@@ -3,22 +3,21 @@ package models
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import helpers.Constants
 import org.junit.Test
+import org.springframework.util.Assert
 
 import static org.junit.Assert.*
 
 class GitflowTests extends BasePipelineTest {
 
     @Test
-    void should_return_true_when_branch_is_valid() throws Exception {
+    void should_setup_gitflow_for_valid_branches() throws Exception {
         //Arrange
         for(String good_branch : Constants.good_branches) {
-            def gitflow = new Gitflow(branch: good_branch)
-
             //Act
-            def result = gitflow.isValid()
+            new Gitflow(source: good_branch)
 
-            //Assert
-            assertTrue(good_branch + " wasn't deemed valid", result)
+            //Assert - here for readability
+            Assert.isTrue(true)
         }
     }
 
@@ -26,80 +25,107 @@ class GitflowTests extends BasePipelineTest {
     void should_return_false_when_branch_is_invalid() throws Exception {
         //Arrange
         for(String bad_branch : Constants.bad_branches) {
-            def gitflow = new Gitflow(branch: bad_branch)
-
-            //Act
-            def result = gitflow.isValid()
-
-            //Assert
-            assertFalse(bad_branch + " wasn't deemed invalid", result)
+            try {
+                new Gitflow(source: bad_branch)
+            } catch(Exception ex) {
+                continue
+            }
+            // Here to cause a failed test
+            Assert.isTrue(false)
         }
     }
 
     @Test
-    void should_test_when_branch_is_master_branch() {
+    void should_violate_pull_request_restrictions() throws Exception {
         //Arrange
-        def valid_test = new Gitflow(branch: "master")
-        def invalid_test = new Gitflow(branch: "not_master")
+        List<Tuple<String, String>> tests = new ArrayList<>()
+        //Release
+        tests.add(new Tuple('release/test', 'master'))
+        tests.add(new Tuple('release/test', 'release/test2'))
+        tests.add(new Tuple('release/test', 'feature/test'))
+        tests.add(new Tuple('release/test', 'hotfix/test'))
+        tests.add(new Tuple('release/test', 'bugfix/test'))
 
-        //Act / Assert
-        assertTrue("Master branch should be identified", valid_test.isMasterBranch())
-        assertFalse("Should not be master branch", invalid_test.isMasterBranch())
+        //Hotfix
+        tests.add(new Tuple('release/test', 'master'))
+        tests.add(new Tuple('release/test', 'release/test2'))
+        tests.add(new Tuple('release/test', 'feature/test'))
+        tests.add(new Tuple('release/test', 'hotfix/test'))
+        tests.add(new Tuple('release/test', 'bugfix/test'))
+
+        //Feature
+        tests.add(new Tuple('release/test', 'master'))
+        tests.add(new Tuple('release/test', 'release/test2'))
+        tests.add(new Tuple('release/test', 'feature/test'))
+        tests.add(new Tuple('release/test', 'hotfix/test'))
+        tests.add(new Tuple('release/test', 'bugfix/test'))
+
+        //Bugfix
+        tests.add(new Tuple('release/test', 'master'))
+        tests.add(new Tuple('release/test', 'develop'))
+        tests.add(new Tuple('release/test', 'feature/test'))
+        tests.add(new Tuple('release/test', 'hotfix/test'))
+        tests.add(new Tuple('release/test', 'bugfix/test'))
+
+
+        for(Tuple test : tests) {
+            try {
+                //Act
+                new Gitflow(source: test[0], target: test[1], is_pull_request: true)
+            } catch(Exception ex) {
+                //Assert
+                continue
+            }
+            throw new Exception(String.format('Expected an exception to be thrown for source %s into target %s', test[0], test[1]))
+        }
     }
 
     @Test
-    void should_test_when_branch_is_develop_branch() {
-        //Arrange
-        def valid_test = new Gitflow(branch: "develop")
-        def invalid_test = new Gitflow(branch: "not_develop")
-
-        //Act / Assert
-        assertTrue("Develop branch should be identified", valid_test.isDevelopBranch())
-        assertFalse("Should not be develop branch", invalid_test.isDevelopBranch())
+    void should_correctly_identify_master_branch() {
+        //Arrange / Act / Assert
+        assertTrue(new Gitflow(source: "master").isMasterBranch())
+        assertTrue(new Gitflow(source: "develop").isMasterBranch('master'))
+        assertFalse(new Gitflow(source: "develop").isMasterBranch())
     }
 
     @Test
-    void should_test_when_branch_is_hotfix_branch() {
-        //Arrange
-        def valid_test = new Gitflow(branch: "hotfix/test")
-        def invalid_test = new Gitflow(branch: "feature/test")
-
-        //Act / Assert
-        assertTrue("Hotfix branch should be identified", valid_test.isHotfixBranch())
-        assertFalse("Should not be hotfix branch", invalid_test.isHotfixBranch())
+    void should_correctly_identify_develop_branch() {
+        //Arrange / Act / Assert
+        assertTrue(new Gitflow(source: "develop").isDevelopBranch())
+        assertTrue(new Gitflow(source: "master").isDevelopBranch('develop'))
+        assertFalse(new Gitflow(source: "master").isDevelopBranch())
     }
 
     @Test
-    void should_test_when_branch_is_release_branch() {
-        //Arrange
-        def valid_test = new Gitflow(branch: "release/test")
-        def invalid_test = new Gitflow(branch: "feature/test")
-
-        //Act / Assert
-        assertTrue("Release branch should be identified", valid_test.isReleaseBranch())
-        assertFalse("Should not be release branch", invalid_test.isReleaseBranch())
+    void should_correctly_identify_hotfix_branch() {
+        //Arrange / Act / Assert
+        assertTrue(new Gitflow(source: "hotfix/test").isHotfixBranch())
+        assertTrue(new Gitflow(source: "master").isHotfixBranch('hotfix/test'))
+        assertFalse(new Gitflow(source: "master").isHotfixBranch())
     }
 
     @Test
-    void should_test_when_branch_is_bugfix_branch() {
-        //Arrange
-        def valid_test = new Gitflow(branch: "bugfix/test")
-        def invalid_test = new Gitflow(branch: "feature/test")
-
-        //Act / Assert
-        assertTrue("Bugfix branch should be identified", valid_test.isBugfixBranch())
-        assertFalse("Should not be bugfix branch", invalid_test.isBugfixBranch())
+    void should_correctly_identify_release_branch() {
+        //Arrange / Act / Assert
+        assertTrue(new Gitflow(source: "release/test").isReleaseBranch())
+        assertTrue(new Gitflow(source: "master").isReleaseBranch('release/test'))
+        assertFalse(new Gitflow(source: "master").isReleaseBranch())
     }
 
     @Test
-    void should_test_when_branch_is_feature_branch() {
-        //Arrange
-        def valid_test = new Gitflow(branch: "feature/test")
-        def invalid_test = new Gitflow(branch: "bugfix/test")
+    void should_correctly_identify_bugfix_branch() {
+        //Arrange / Act / Assert
+        assertTrue(new Gitflow(source: "bugfix/test").isBugfixBranch())
+        assertTrue(new Gitflow(source: "master").isBugfixBranch('bugfix/test'))
+        assertFalse(new Gitflow(source: "master").isBugfixBranch())
+    }
 
-        //Act / Assert
-        assertTrue("Feature branch should be identified", valid_test.isFeatureBranch())
-        assertFalse("Should not be feature branch", invalid_test.isFeatureBranch())
+    @Test
+    void should_correctly_identify_feature_branch() {
+        //Arrange / Act / Assert
+        assertTrue(new Gitflow(source: "feature/test").isFeatureBranch())
+        assertTrue(new Gitflow(source: "master").isFeatureBranch('feature/test'))
+        assertFalse(new Gitflow(source: "master").isFeatureBranch())
     }
 
     @Test
@@ -111,7 +137,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         for(String branch : valid_branches) {
-            def gitflow = new Gitflow(branch: branch)
+            def gitflow = new Gitflow(source: branch)
 
             //Act / Assert
             assertTrue(branch + " should be package branch", gitflow.isPackageBranch())
@@ -129,7 +155,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         for(String branch : invalid_branches) {
-            def gitflow = new Gitflow(branch: branch)
+            def gitflow = new Gitflow(source: branch)
 
             //Act / Assert
             assertFalse(branch + " should be package branch", gitflow.isPackageBranch())
@@ -145,7 +171,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         for(String branch : valid_branches) {
-            def gitflow = new Gitflow(branch: branch)
+            def gitflow = new Gitflow(source: branch)
 
             //Act / Assert
             assertTrue(branch + " should be integration branch", gitflow.isIntegrationBranch())
@@ -163,7 +189,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         for(String branch : invalid_branches) {
-            def gitflow = new Gitflow(branch: branch)
+            def gitflow = new Gitflow(source: branch)
 
             //Act / Assert
             assertFalse(branch + " should be integration branch", gitflow.isIntegrationBranch())
@@ -179,7 +205,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         for(String branch : valid_branches) {
-            def gitflow = new Gitflow(branch: branch)
+            def gitflow = new Gitflow(source: branch)
 
             //Act / Assert
             assertTrue(branch + " should be main branch", gitflow.isMainBranch())
@@ -197,7 +223,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         for(String branch : invalid_branches) {
-            def gitflow = new Gitflow(branch: branch)
+            def gitflow = new Gitflow(source: branch)
 
             //Act / Assert
             assertFalse(branch + " should be main branch", gitflow.isMainBranch())
@@ -207,8 +233,8 @@ class GitflowTests extends BasePipelineTest {
     @Test
     void should_test_when_branch_is_pull_request() {
         //Arrange
-        def valid_test = new Gitflow(branch: 'example', is_pull_request: true)
-        def invalid_test = new Gitflow(branch: 'example', is_pull_request: false)
+        def valid_test = new Gitflow(source: 'bugfix/test', target: 'release/test', is_pull_request: true)
+        def invalid_test = new Gitflow(source: 'master', is_pull_request: false)
 
         //Act / Assert
         assertTrue("Should be pull request", valid_test.isPullRequest())
@@ -218,106 +244,38 @@ class GitflowTests extends BasePipelineTest {
     @Test
     void should_return_source_branch() {
         //Arrange
-        def test_branch = "test_branch"
-        def gitflow = new Gitflow(branch: test_branch)
+        def test_branch = "master"
+        def gitflow = new Gitflow(source: test_branch)
 
         //Act / Assert
         assertEquals("Branch set should be " + test_branch, test_branch, gitflow.getSourceBranch())
     }
 
     @Test
-    void should_get_lookahead_branch_when_branch_is_set() {
+    void should_return_target_branch() {
         //Arrange
-        def script_result = "test"
-        def gitflow = new Gitflow(
-                branch: 'example',
-                script: [
-                        sh: {
-                            return script_result
-                        }
-                ]
-        )
+        def test_branch = "master"
+        def gitflow = new Gitflow(source: 'release/test', target: test_branch)
 
-        //Act
-        def result = gitflow.getLookaheadBranch()
-
-        //Assert
-        assertEquals("Should return script response of " + script_result, script_result, result)
+        //Act / Assert
+        assertEquals("Branch set should be " + test_branch, test_branch, gitflow.getTargetBranch())
     }
 
     @Test
-    void should_trim_lookahead_branch_result() {
-        //Arrange
-        def script_result = "test       "
-        def expected_result = "test"
-        def gitflow = new Gitflow(
-                branch: 'example',
-                script: [
-                        sh: {
-                            return script_result
-                        }
-                ]
-        )
-
-        //Act
-        def result = gitflow.getLookaheadBranch()
-
-        //Assert
-        assertEquals("Should return script response of " + expected_result, expected_result, result)
-    }
-
-    @Test
-    void should_get_static_master_branch_as_lookahead_branch_for_package_branches() {
-        //Arrange
-        String[] branches = [
-                'release/test',
-                'hotfix/test'
-        ]
-        String expectedBranch = 'master'
-
-        for(String branch : branches) {
-            def gitflow = new Gitflow(
-                    branch: branch
-            )
-
-            //Act
-            def result = gitflow.getLookaheadBranch()
-
-            //Assert
-            assertEquals("Should return script response of " + expectedBranch, expectedBranch, result)
-        }
-    }
-
-    @Test(expected = Exception.class)
-    void should_throw_exception_when_getting_lookahead_branch_script_result_returns_empty_string() {
-        //Arrange
-        def errorMessage = "Unable to determine the parent branch"
-        def gitflow = new Gitflow(
-                script: [
-                        sh: {
-                            return ""
-                        }
-                ]
-        )
-
-        //Act
-        try {
-            gitflow.getLookaheadBranch()
-        }
-        catch (Exception ex) {
-            //Assert
-            assertEquals(errorMessage, ex.getMessage())
-            throw ex
-        }
-
-        //Assert
-        fail("Should not get to this point, exception should be thrown")
+    void should_get_parent_branch() {
+        //Arrange / Act / Assert
+        assertEquals('master', new Gitflow(source: 'release/test').getParentBranch())
+        assertEquals('master', new Gitflow(source: 'hotfix/test').getParentBranch())
+        assertEquals('develop', new Gitflow(source: 'feature/test').getParentBranch())
+        assertEquals('master', new Gitflow(source: 'release/test', target: 'master').getParentBranch())
+        assertEquals('master', new Gitflow(source: 'hotfix/test', target: 'master').getParentBranch())
+        assertEquals('develop', new Gitflow(source: 'feature/test', target: 'develop').getParentBranch())
     }
 
     @Test
     void should_get_patch_increment_type_flag_for_hotfix_branch() {
         //Arrange
-        def gitflow = new Gitflow(branch: "hotfix/test")
+        def gitflow = new Gitflow(source: "hotfix/test")
 
         //Act
         def result = gitflow.getIncrementType()
@@ -329,7 +287,7 @@ class GitflowTests extends BasePipelineTest {
     @Test
     void should_get_minor_increment_type_flag_for_release_branch() {
         //Arrange
-        def gitflow = new Gitflow(branch: "release/test")
+        def gitflow = new Gitflow(source: "release/test")
 
         //Act
         def result = gitflow.getIncrementType()
@@ -342,7 +300,7 @@ class GitflowTests extends BasePipelineTest {
     void should_throw_exception_when_trying_to_get_update_flag_for_invalid_branch() {
         //Arrange
         def errorMessage = "Incorrect use of increment type function"
-        def gitflow = new Gitflow(branch: "feature/test")
+        def gitflow = new Gitflow(source: "feature/test")
 
         //Act
         try {
@@ -363,7 +321,7 @@ class GitflowTests extends BasePipelineTest {
         //Arrange
         String branch = 'feature/ID123-test_branch'
         String expected = 'feature_ID123-test-branch'
-        def gitflow = new Gitflow(branch: branch)
+        def gitflow = new Gitflow(source: branch)
 
         //Act
         String result = gitflow.getNextVersion(null, null)
@@ -385,7 +343,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         def gitflow = new Gitflow(
-                branch: branch,
+                source: branch,
                 script: [
                         sh: {
                             return newVersion
@@ -402,20 +360,24 @@ class GitflowTests extends BasePipelineTest {
                             String name = map.get('name')
                             String value = map.get('value')
 
-                            if(name != 'PROJECT_KEY' && name != 'RELEASE_TYPE' && name != 'GIT_TAG') {
-                                throw new Exception("Invalid key for string function")
-                            }
-
                             if(name == 'PROJECT_KEY') {
                                 assertEquals("Should have correct project key: " + projectKey, projectKey, value)
+                                return
                             }
 
                             if(name == 'RELEASE_TYPE') {
                                 assertEquals("Should have release type: " + releaseType, releaseType, value)
+                                return
                             }
 
-                            if(name == 'GIT_TAG') {
-                                assertEquals("Should have correct git tag: " + gitTag, gitTag, value)
+                            if(name == 'PARENT_HASH') {
+                                assertEquals("Should have correct parent hash: " + newVersion, newVersion, value)
+                                return
+                            }
+
+                            if(name == 'BASE_BRANCH') {
+                                assertEquals("Should have correct base branch: " + branch, branch, value)
+                                return
                             }
                         }
                 ]
@@ -441,7 +403,7 @@ class GitflowTests extends BasePipelineTest {
         ]
 
         def gitflow = new Gitflow(
-                branch: branch,
+                source: branch,
                 script: [
                         sh: {
                             return newVersion
@@ -458,20 +420,24 @@ class GitflowTests extends BasePipelineTest {
                             String name = map.get('name')
                             String value = map.get('value')
 
-                            if(name != 'PROJECT_KEY' && name != 'RELEASE_TYPE' && name != 'GIT_TAG') {
-                                throw new Exception("Invalid key for string function")
-                            }
-
                             if(name == 'PROJECT_KEY') {
                                 assertEquals("Should have correct project key: " + projectKey, projectKey, value)
+                                return
                             }
 
                             if(name == 'RELEASE_TYPE') {
                                 assertEquals("Should have release type: " + releaseType, releaseType, value)
+                                return
                             }
 
-                            if(name == 'GIT_TAG') {
-                                assertEquals("Should have correct git tag: " + gitTag, gitTag, value)
+                            if(name == 'PARENT_HASH') {
+                                assertEquals("Should have correct parent hash: " + newVersion, newVersion, value)
+                                return
+                            }
+
+                            if(name == 'BASE_BRANCH') {
+                                assertEquals("Should have correct base branch: " + branch, branch, value)
+                                return
                             }
                         }
                 ]
@@ -485,10 +451,46 @@ class GitflowTests extends BasePipelineTest {
     }
 
     @Test
+    void should_get_nearest_parent_from_script() {
+        //Arrange
+        def gitflow = new Gitflow(script: [sh: { return 'something' }], source: 'master')
+
+        //Act
+        def result = gitflow.getNearestParentHash('master', 'release/test')
+
+        //Assert
+        assertEquals('something', result)
+    }
+
+    @Test(expected = Exception.class)
+    void should_throw_exception_for_blank_nearest_parent_from_script() {
+        //Arrange
+        def gitflow = new Gitflow(script: [sh: { return '' }], source: 'master')
+
+        //Act
+        gitflow.getNearestParentHash('master', 'release/test')
+
+        //Assert - should not get here
+        assertTrue(false)
+    }
+
+    @Test(expected = Exception.class)
+    void should_throw_exception_for_null_nearest_parent_from_script() {
+        //Arrange
+        def gitflow = new Gitflow(script: [sh: { return null }], source: 'master')
+
+        //Act
+        gitflow.getNearestParentHash('master', 'release/test')
+
+        //Assert - should not get here
+        assertTrue(false)
+    }
+
+    @Test
     void should_return_true_for_bump_commit() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "feature/test",
+                source: "feature/test",
                 script: [
                         sh: {
                             return Constants.bumpCommit
@@ -507,7 +509,7 @@ class GitflowTests extends BasePipelineTest {
     void should_return_false_for_no_bump_commit() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "feature/test",
+                source: "feature/test",
                 script: [
                         sh: {
                             return 'no'
@@ -526,7 +528,7 @@ class GitflowTests extends BasePipelineTest {
     void should_exit_build_for_release_branch_for_bump_commit() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "release/test",
+                source: "release/test",
                 is_pull_request: false,
                 script: [
                         sh: {
@@ -546,7 +548,7 @@ class GitflowTests extends BasePipelineTest {
     void should_exit_build_for_hotfix_branch_for_bump_commit() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false,
                 script: [
                         sh: {
@@ -566,7 +568,7 @@ class GitflowTests extends BasePipelineTest {
     void should_not_exit_build_if_not_package_branch() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "bugfix/test",
+                source: "bugfix/test",
                 is_pull_request: false,
                 script: [
                         sh: {
@@ -586,7 +588,8 @@ class GitflowTests extends BasePipelineTest {
     void should_not_exit_build_if_pull_request() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "release/test",
+                source: "bugfix/test",
+                target: 'release/test',
                 is_pull_request: true,
                 script: [
                         sh: {
@@ -606,7 +609,7 @@ class GitflowTests extends BasePipelineTest {
     void should_not_exit_build_if_not_bump_commit() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "release/test",
+                source: "release/test",
                 is_pull_request: false,
                 script: [
                         sh: {
@@ -623,10 +626,21 @@ class GitflowTests extends BasePipelineTest {
     }
 
     @Test
+    void should_update_version_number_for_build() {
+        //Arrange / Act / Assert
+        assertTrue(new Gitflow(script: [ sh: { return 'yes' }], source: 'feature/test').shouldUpdateVersion())
+        assertTrue(new Gitflow(script: [ sh: { return 'yes' }], source: 'bugfix/test').shouldUpdateVersion())
+        assertTrue(new Gitflow(script: [ sh: { return 'yes' }], source: 'release/test').shouldUpdateVersion())
+        assertTrue(new Gitflow(script: [ sh: { return 'yes' }], source: 'hotfix/test').shouldUpdateVersion())
+        assertFalse(new Gitflow(script: [ sh: { return 'yes' }], source: 'master').shouldUpdateVersion())
+        assertFalse(new Gitflow(script: [ sh: { return 'yes' }], source: 'develop').shouldUpdateVersion())
+    }
+
+    @Test
     void should_package_build_for_release_branch() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "release/test",
+                source: "release/test",
                 is_pull_request: false,
                 script: [
                         sh: { Map<String, String> items ->
@@ -650,14 +664,13 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertTrue('Should package release build', result)
-        assertFalse('Should not run integration build', gitflow.shouldRunIntegrationTest())
     }
 
     @Test
     void should_package_build_for_hotfix_branch() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false,
                 script: [
                         sh: { Map<String, String> items ->
@@ -681,14 +694,13 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertTrue('Should package release build', result)
-        assertFalse('Should not run integration build', gitflow.shouldRunIntegrationTest())
     }
 
     @Test
     void should_not_package_build_if_not_package_branch() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "feature/test",
+                source: "feature/test",
                 is_pull_request: false,
                 script: [
                         sh: { Map<String, String> items ->
@@ -712,13 +724,15 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertFalse('Should not package release build', result)
+        assertTrue(gitflow.shouldRunIntegrationTest())
     }
 
     @Test
     void should_not_package_build_if_pull_request() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "hotfix/test",
+                source: 'bugfix/test',
+                target: 'hotfix/test',
                 is_pull_request: true,
                 script: [
                         sh: { Map<String, String> items ->
@@ -742,13 +756,14 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertFalse('Should not package release build', result)
+        assertTrue(gitflow.shouldRunIntegrationTest())
     }
 
     @Test
     void should_not_package_build_if_bump_commit() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false,
                 script: [
                         sh: { Map<String, String> items ->
@@ -772,13 +787,14 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertFalse('Should not package release build', result)
+        assertTrue(gitflow.shouldRunIntegrationTest())
     }
 
     @Test
     void should_not_package_build_if_hotfix_branch_has_no_difference_to_parent() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false,
                 script: [
                         sh: { Map<String, String> items ->
@@ -802,13 +818,14 @@ class GitflowTests extends BasePipelineTest {
 
         //Assert
         assertFalse('Should not package release build', result)
+        assertTrue(gitflow.shouldRunIntegrationTest())
     }
 
     @Test
     void has_git_difference_to_parent() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false,
                 script: [
                         sh: { Map<String, String> items ->
@@ -836,7 +853,7 @@ class GitflowTests extends BasePipelineTest {
     void does_not_have_git_difference_to_parent() {
         //Arrange
         def gitflow = new Gitflow(
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false,
                 script: [
                         sh: { Map<String, String> items ->

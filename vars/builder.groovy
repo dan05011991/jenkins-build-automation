@@ -16,31 +16,31 @@ def call(Map config=[:], Closure body={}) {
         // This section must be above the gitflow initialisation
         def is_pull_request = BRANCH_NAME.startsWith('PR-')
         def source_branch = BRANCH_NAME
+        def target_branch = null
         def source_url = "${scm.userRemoteConfigs[0].url}"
 
         // Override source branch with change_branch in PR scenarios
         if (is_pull_request) {
             source_branch = CHANGE_BRANCH
+            target_branch = CHANGE_TARGET
         }
 
         def gitflow = new Gitflow(
                 script: this,
-                branch: source_branch,
+                source: source_branch,
+                target: target_branch,
                 is_pull_request: is_pull_request
         )
         def docker_helper = new Docker(
                 script: this,
                 gitflow: gitflow)
 
-        if (!gitflow.isValid()) {
-            throw new Exception("Invalid branch syntax. Must follow standard GitFlow process")
-        }
-
         stage('Clean') {
 
             cleanWs()
 
             echo "Source branch: ${source_branch}"
+            echo "Target branch: ${target_branch}"
             echo "Source Url: ${source_url}"
             echo "Is Pull Request?: ${is_pull_request}"
         }

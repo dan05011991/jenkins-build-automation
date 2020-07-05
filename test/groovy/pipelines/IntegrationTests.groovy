@@ -40,7 +40,7 @@ class IntegrationTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "develop",
+                source: "develop",
                 is_pull_request: false
         )
         def docker_helper = new Docker(
@@ -85,7 +85,7 @@ class IntegrationTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "develop",
+                source: "develop",
                 is_pull_request: false
         )
         def docker_helper = new Docker(
@@ -129,7 +129,7 @@ class IntegrationTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "develop",
+                source: "develop",
                 is_pull_request: false
         )
         def docker_helper = new Docker(
@@ -173,7 +173,7 @@ class IntegrationTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "develop",
+                source: "develop",
                 is_pull_request: false
         )
         def docker_helper = new Docker(
@@ -212,6 +212,7 @@ class IntegrationTests extends BasePipelineTest {
         binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         helper.registerAllowedMethod("sh", [], {c -> "Not required"})
         helper.registerAllowedMethod("sh", [Map.class], {c -> "Not required"})
+        helper.registerAllowedMethod("sshagent", [Map.class, Closure.class], { c -> "Not required" })
         def script = [
                 sh: { Map<String, String> items ->
                     if(items['script'] == './get_parent_branch.sh') {
@@ -223,7 +224,8 @@ class IntegrationTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "develop",
+                source: "feature/test",
+                target: 'develop',
                 is_pull_request: true
         )
         def docker_helper = new Docker(
@@ -243,16 +245,16 @@ class IntegrationTests extends BasePipelineTest {
         //Assert
         assertStringArray([
                 '   integration_test.run()',
-                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=maven, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@00000000})',
-                '      integration_test.echo(Lookahead merge from base branch test to develop)',
-                '      integration_test.sh(\n                git checkout test\n                git pull origin test\n                git checkout develop\n                git merge test\n            )',
+                '   integration_test.call({gitflow=models.Gitflow@ecf9049, buildType=maven, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@72efb5c1})',
+                '      integration_test.echo(Lookahead merge from base branch develop to feature/test)',
+                '      integration_test.sshagent({credentials=[ssh]}, groovy.lang.Closure)',
                 '      integration_test.stage(Maven Build, groovy.lang.Closure)',
-                '         integration_test.sh(docker build -t 7b43bb7f-b75b-484c-858b-96bf45bc9e32 -f test.dockerfile .)',
-                '         integration_test.sh(docker run --name 7b43bb7f-b75b-484c-858b-96bf45bc9e32 7b43bb7f-b75b-484c-858b-96bf45bc9e32 mvn surefire-report:report)',
-                '         integration_test.sh(docker cp $(docker ps -aqf "name=7b43bb7f-b75b-484c-858b-96bf45bc9e32"):/usr/webapp/target/surefire-reports .)',
+                '         integration_test.sh(docker build -t ba3a2bb1-4426-44cb-ae52-1423405e5b21 -f test.dockerfile .)',
+                '         integration_test.sh(docker run --name ba3a2bb1-4426-44cb-ae52-1423405e5b21 ba3a2bb1-4426-44cb-ae52-1423405e5b21 mvn surefire-report:report)',
+                '         integration_test.sh(docker cp $(docker ps -aqf "name=ba3a2bb1-4426-44cb-ae52-1423405e5b21"):/usr/webapp/target/surefire-reports .)',
                 '         integration_test.junit(surefire-reports/**/*.xml)',
-                '         integration_test.sh(docker rm -f 7b43bb7f-b75b-484c-858b-96bf45bc9e32)',
-                '         integration_test.sh(docker rmi 7b43bb7f-b75b-484c-858b-96bf45bc9e32)'
+                '         integration_test.sh(docker rm -f ba3a2bb1-4426-44cb-ae52-1423405e5b21)',
+                '         integration_test.sh(docker rmi ba3a2bb1-4426-44cb-ae52-1423405e5b21)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }

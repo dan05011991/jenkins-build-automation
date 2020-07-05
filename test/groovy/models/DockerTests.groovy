@@ -36,7 +36,7 @@ class DockerTests extends BasePipelineTest {
                 }
         ]
         def gitflow = new Gitflow(
-                branch: 'example',
+                source: 'master',
                 script: script
         )
         def docker = new Docker(
@@ -60,7 +60,7 @@ class DockerTests extends BasePipelineTest {
                 }
         ]
         def gitflow = new Gitflow(
-                branch: 'example',
+                source: 'master',
                 script: script
         )
         def docker = new Docker(
@@ -80,7 +80,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         String version = '1.0.0'
         def gitflow = new Gitflow(
-                branch: 'master'
+                source: 'master'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -98,7 +98,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         String version = '1.0.0'
         def gitflow = new Gitflow(
-                branch: 'develop'
+                source: 'develop'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -116,7 +116,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         String version = '1.0.0'
         def gitflow = new Gitflow(
-                branch: 'hotfix/test'
+                source: 'hotfix/test'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -134,7 +134,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         String version = '1.0.0'
         def gitflow = new Gitflow(
-                branch: 'release/test'
+                source: 'release/test'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -152,7 +152,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         def errorMessage = 'Attempting to get docker tag for a branch which is not allowed'
         def gitflow = new Gitflow(
-                branch: 'feature/dev'
+                source: 'feature/dev'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -177,7 +177,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         String version = '1.0.0'
         def gitflow = new Gitflow(
-                branch: 'master'
+                source: 'master'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -195,7 +195,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         String version = '1.0.0'
         def gitflow = new Gitflow(
-                branch: 'hotfix/test'
+                source: 'hotfix/test'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -213,7 +213,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         String version = '1.0.0'
         def gitflow = new Gitflow(
-                branch: 'release/test'
+                source: 'release/test'
         )
         def docker = new Docker(
                 gitflow: gitflow
@@ -231,7 +231,7 @@ class DockerTests extends BasePipelineTest {
         //Arrange
         def errorMessage = 'Attempting to get reference tag for a branch which is not allowed'
         def gitflow = new Gitflow(
-                branch: 'feature/dev'
+                source: 'feature/dev'
         )
         def docker = new Docker(
                 gitflow: gitflow

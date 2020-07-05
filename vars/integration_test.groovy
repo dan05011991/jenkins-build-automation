@@ -9,16 +9,18 @@ def call(config) {
     // bugfix branches = merge from release
     if (config.gitflow.is_pull_request) {
         source_branch = config.gitflow.getSourceBranch()
-        lookahead_branch = config.gitflow.getLookaheadBranch()
+        target_branch = config.gitflow.getTargetBranch()
 
-        echo "Lookahead merge from base branch ${lookahead_branch} to ${source_branch}"
+        echo "Lookahead merge from base branch ${target_branch} to ${source_branch}"
 
-        sh """
-                git checkout ${lookahead_branch}
-                git pull origin ${lookahead_branch}
+        sshagent(credentials: ['ssh']) {
+            sh """
+                git checkout ${target_branch}
+                git pull origin ${target_branch}
                 git checkout ${source_branch}
-                git merge ${lookahead_branch}
+                git merge ${target_branch}
             """
+        }
     }
 
     if (config.buildType == 'docker-in-maven') {

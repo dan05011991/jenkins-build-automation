@@ -47,7 +47,7 @@ class PackageCandidateTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false
         )
         def docker = new Docker(
@@ -114,7 +114,7 @@ class PackageCandidateTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false
         )
         def docker = new Docker(
@@ -178,7 +178,7 @@ class PackageCandidateTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false
         )
         def docker = new Docker(
@@ -238,7 +238,7 @@ class PackageCandidateTests extends BasePipelineTest {
         ]
         def gitflow = new Gitflow(
                 script: script,
-                branch: "hotfix/test",
+                source: "hotfix/test",
                 is_pull_request: false
         )
         def docker = new Docker(

@@ -26,6 +26,9 @@ class Pipeline {
                         if (script.contains('cat version')) {
                             return '1.0.1'
                         }
+                        if (script.contains('get_parent_hash.sh')) {
+                            return '1234567890'
+                        }
                         throw new Exception('Invalid use of sh')
                 },
                 string       : {

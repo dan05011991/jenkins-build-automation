@@ -30,7 +30,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "hotfix/test",
+                        source: "hotfix/test",
                         is_pull_request: false
                 ),
                 buildType: 'maven'
@@ -60,7 +60,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "hotfix/test",
+                        source: "hotfix/test",
                         is_pull_request: false
                 ),
                 buildType: 'docker-in-maven'
@@ -90,7 +90,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "hotfix/test",
+                        source: "hotfix/test",
                         is_pull_request: false
                 ),
                 buildType: 'gulp'
@@ -121,7 +121,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "hotfix/test",
+                        source: "hotfix/test",
                         is_pull_request: false
                 ),
                 buildType: 'webpack'
@@ -152,7 +152,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "release/test",
+                        source: "release/test",
                         is_pull_request: false
                 ),
                 buildType: 'maven'
@@ -182,7 +182,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "release/test",
+                        source: "release/test",
                         is_pull_request: false
                 ),
                 buildType: 'docker-in-maven'
@@ -212,7 +212,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "release/test",
+                        source: "release/test",
                         is_pull_request: false
                 ),
                 buildType: 'gulp'
@@ -243,7 +243,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "release/test",
+                        source: "release/test",
                         is_pull_request: false
                 ),
                 buildType: 'webpack'
@@ -274,7 +274,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "feature/test-123_456",
+                        source: "feature/test-123_456",
                         is_pull_request: false
                 ),
                 buildType: 'maven'
@@ -304,7 +304,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "feature/test-123_456",
+                        source: "feature/test-123_456",
                         is_pull_request: false
                 ),
                 buildType: 'docker-in-maven'
@@ -334,7 +334,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "feature/test-123_456",
+                        source: "feature/test-123_456",
                         is_pull_request: false
                 ),
                 buildType: 'gulp'
@@ -365,7 +365,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
         runScript(pipeline).call(
                 gitflow: new Gitflow(
                         script: script,
-                        branch: "feature/test-123_456",
+                        source: "feature/test-123_456",
                         is_pull_request: false
                 ),
                 buildType: 'webpack'

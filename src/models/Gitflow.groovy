@@ -2,57 +2,101 @@ package models
 
 class Gitflow {
     private final def script
-    private final String branch
+    private final String source
+    private final String target
     private final Boolean is_pull_request
 
     Gitflow(Map<String, ?> items) {
         this.script = items.get("script")
-        this.branch = items.get("branch")
+        this.source = items.get("source")
+        this.target = items.get("target")
         this.is_pull_request = items.get("is_pull_request")
 
-        if(branch == null) {
+        if(source == null) {
             throw new Exception('Gitflow has not been setup correctly')
+        }
+
+        validateGitflow()
+    }
+
+    def validateGitflow() {
+        if(!isMainBranch() && !isPackageBranch() && !isIntegrationBranch()) {
+            throw new Exception("Invalid branch syntax. Must follow standard GitFlow process")
+        }
+
+        if(this.is_pull_request) {
+            if(this.target == null) {
+                throw new Exception("Gitflow was unable to determine target branch for pull request")
+            }
+
+            if(isMasterBranch(this.target) && !isPackageBranch()) {
+                throw new Exception("Gitflow violation, attempting to merge into master from invalid source ${this.source}")
+            }
+
+            if(isDevelopBranch(this.target) && !isFeatureBranch()) {
+                throw new Exception("Gitflow violation, attempting to merge into develop from invalid source ${this.source}")
+            }
+
+            if(isReleaseBranch(this.target) && !isBugfixBranch()) {
+                throw new Exception("Gitflow violation, attempting to merge into a release from invalid source ${this.source}")
+            }
+
+            if(isFeatureBranch(this.target) && !isFeatureBranch()) {
+                throw new Exception("Gitflow violation, attempting to merge into a feature from invalid source ${this.source}")
+            }
+
+            if(isHotfixBranch(this.target) && !isBugfixBranch()) {
+                throw new Exception("Gitflow violation, attempting to merge into a hotfix from invalid source ${this.source}")
+            }
+
+            if(isBugfixBranch(this.target)) {
+                throw new Exception("Gitflow violation, attempting to merge into a bugfix, this is not permitted for a user")
+            }
+
+            if(isMasterBranch(this.target)) {
+                throw new Exception('Gitflow violation, attempting to merge into master, this is not permitted by a user')
+            }
         }
     }
 
-    def isValid() {
-        return isMainBranch() || isPackageBranch() || isIntegrationBranch()
-    }
-
-    def isMasterBranch() {
+    def isMasterBranch(branch = this.source) {
         return branch == 'master'
     }
 
-    def isDevelopBranch() {
+    def isDevelopBranch(branch = this.source) {
         return branch == 'develop'
     }
 
-    def isHotfixBranch() {
-        return branch.startsWith('hotfix/')
+    def isHotfixBranch(String branch = this.source) {
+        return hasPrefix(branch, 'hotfix/')
     }
 
-    def isReleaseBranch() {
-        return branch.startsWith('release/')
+    def isReleaseBranch(String branch = this.source) {
+        return hasPrefix(branch, 'release/')
     }
 
-    def isBugfixBranch() {
-        return branch.startsWith('bugfix/')
+    def isBugfixBranch(String branch = this.source) {
+        return hasPrefix(branch, 'bugfix/')
     }
 
-    def isFeatureBranch() {
-        return branch.startsWith('feature/')
+    def isFeatureBranch(String branch = this.source) {
+        return hasPrefix(branch, 'feature/')
     }
 
-    def isPackageBranch() {
-        return isReleaseBranch() || isHotfixBranch()
+    private boolean hasPrefix(String haystack, String needle) {
+        return haystack.startsWith(needle) && ((haystack.length() - needle.length()) > 0)
     }
 
-    def isIntegrationBranch() {
-        return isFeatureBranch() || isBugfixBranch()
+    def isPackageBranch(branch = this.source) {
+        return isReleaseBranch(branch) || isHotfixBranch(branch)
     }
 
-    def isMainBranch() {
-        return isMasterBranch() || isDevelopBranch()
+    def isIntegrationBranch(branch = this.source) {
+        return isFeatureBranch(branch) || isBugfixBranch(branch)
+    }
+
+    def isMainBranch(branch = this.source) {
+        return isMasterBranch(branch) || isDevelopBranch(branch)
     }
 
     def isPullRequest() {
@@ -60,28 +104,24 @@ class Gitflow {
     }
 
     def getSourceBranch() {
-        return branch
+        return source
     }
 
-    def getLookaheadBranch() {
-        if(branch.startsWith('release/') || branch.startsWith('hotfix/')) {
-            return 'master'
-        }
-        if(branch.startsWith('feature/')) {
-            return 'develop'
-        } 
-        return getParentBranch()
+    def getTargetBranch() {
+        return target
     }
 
     def getParentBranch() {
-        def branch = script.sh(
-                script: "./get_parent_branch.sh",
-                returnStdout: true).trim()
-
-        if(branch == null || branch.length() == 0) {
-            throw new Exception('Unable to determine the parent branch')
+        if(this.target != null) {
+            return this.target
         }
-        return branch
+        if(isPackageBranch()) {
+            return 'master'
+        }
+        if(isFeatureBranch()) {
+            return 'develop'
+        } 
+        throw new Exception('Unable to determine the parent branch')
     }
 
     def getIncrementType() {
@@ -96,12 +136,12 @@ class Gitflow {
     def getNextVersion(String key, String tag) {
 
         if(isFeatureBranch() || isBugfixBranch()) {
-            return branch.replace("_", "-")
+            return source.replace("_", "-")
                          .replace("/", "_")
         }
 
         // Retrieves parent branch and then gets the hash when it branched off
-        def parentHash = getNearestParentHash(this.getParentBranch(), this.branch)
+        def parentHash = getNearestParentHash(this.getParentBranch(), this.source)
 
         def type = getIncrementType()
         def job = script.build(
@@ -111,7 +151,7 @@ class Gitflow {
                     script.string(name: 'RELEASE_TYPE', value: "${type}"),
                     script.string(name: 'GIT_TAG', value: "${tag}"),
                     script.string(name: 'PARENT_HASH', value: "${parentHash}"),
-                    script.string(name: 'BASE_BRANCH', value: "${this.branch}")
+                    script.string(name: 'BASE_BRANCH', value: "${this.source}")
                 ],
                 propagate: true,
                 wait: true)
@@ -161,7 +201,7 @@ class Gitflow {
     // Feature / Bugfix branch = transform the branch name into a version
     // Package branch = uses job to generate new version
     def shouldUpdateVersion() {
-        return isFeatureBranch() || isFeatureBranch() ||  shouldPackageBuild()
+        return isFeatureBranch() || isBugfixBranch() ||  shouldPackageBuild()
     }
 
     def shouldRunIntegrationTest() {
@@ -191,7 +231,7 @@ class Gitflow {
     }
 
     def hasGitDifferenceToParent() {
-        String parentBranch = getLookaheadBranch()
+        String parentBranch = getParentBranch()
         script.sh(script: "git fetch --prune")
         return script.sh(script: """
                 if [ "\$(git diff origin/${parentBranch} 2> /dev/null)" ]; then 
