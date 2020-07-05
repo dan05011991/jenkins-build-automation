@@ -48,7 +48,7 @@ def call(Map config=[:], Closure body={}) {
         stage('Pipeline setup') {
             parallel(
                     'Checkout Project': checkout_step(source_branch, source_url),
-                    'Create pipeline scripts': create_pipeline_step(),
+                    'Create pipeline scripts': create_pipeline_scripts(),
                     'Developer Docker login': docker_login('dev-docker-repo', docker_helper.developerRepo),
                     'Release Docker login': docker_login('release-docker-repo', docker_helper.releaseRepo)
             )
@@ -115,7 +115,7 @@ def checkout_step(source_branch, source_url) {
     }
 }
 
-def create_pipeline_step() {
+def create_pipeline_scripts() {
     return {
         createScript('get_parent_branch.sh')
         createScript('get_parent_hash.sh')
@@ -139,9 +139,11 @@ def docker_login(credentialKey, url) {
 }
 
 def createScript(scriptName) {
-    def scriptContent = libraryResource "com/pipeline/scripts/${scriptName}"
-    writeFile file: "${scriptName}", text: scriptContent
-    sh "chmod +x ${scriptName}"
+    return {
+        def scriptContent = libraryResource "com/pipeline/scripts/${scriptName}"
+        writeFile file: "${scriptName}", text: scriptContent
+        sh "chmod +x ${scriptName}"
+    }
 }
 
 return this
