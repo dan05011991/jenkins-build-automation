@@ -97,14 +97,17 @@ class Gitflow {
         return haystack.startsWith(needle) && ((haystack.length() - needle.length()) > 0)
     }
 
+    @NonCPS
     def isPackageBranch(branch = this.source) {
         return isReleaseBranch(branch) || isHotfixBranch(branch)
     }
 
+    @NonCPS
     def isIntegrationBranch(branch = this.source) {
         return isFeatureBranch(branch) || isBugfixBranch(branch)
     }
 
+    @NonCPS
     def isMainBranch(branch = this.source) {
         return isMasterBranch(branch) || isDevelopBranch(branch)
     }
