@@ -135,8 +135,8 @@ class Gitflow {
                 script: """
                     git diff --old-line-format='' \
                     --new-line-format='' \
-                    <(git rev-list --first-parent ${parentBranch}) \
-                    <(git rev-list --first-parent ${baseBranch}) \
+                    \<(git rev-list --first-parent ${parentBranch}) \
+                    \<(git rev-list --first-parent ${baseBranch}) \
                     | head -1
                 """,
                 returnStdout: true)
