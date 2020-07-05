@@ -139,7 +139,7 @@ def docker_login(credentialKey, url) {
 }
 
 def createScript(scriptName) {
-    sh "Creating pipeline script ${scriptName}"
+    echo "Creating pipeline script ${scriptName}"
     def scriptContent = libraryResource "com/pipeline/scripts/${scriptName}"
     writeFile file: "${scriptName}", text: scriptContent
     sh "chmod +x ${scriptName}"
