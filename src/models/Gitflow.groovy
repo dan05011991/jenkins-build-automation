@@ -69,17 +69,19 @@ class Gitflow {
         }
         if(branch.startsWith('feature/')) {
             return 'develop'
-        }
-        
+        } 
+        return getParentBranch()
+    }
+
+    def getParentBranch() {
         def branch = script.sh(
                 script: "./get_parent_branch.sh",
                 returnStdout: true).trim()
 
-        if (branch?.trim()) {
-            return branch.trim()
+        if(branch == null || branch.length() == 0) {
+            throw new Exception('Unable to determine the parent branch')
         }
-
-        throw new Exception('Unable to determine the parent branch')
+        return branch
     }
 
     def getIncrementType() {
@@ -98,10 +100,8 @@ class Gitflow {
                          .replace("/", "_")
         }
 
-        //TODO: FIX THIS
         // Retrieves parent branch and then gets the hash when it branched off
-        def parentHash = getNearestParentHash(this.getLookaheadBranch(), this.branch)
-        //def parentHash = '123'
+        def parentHash = getNearestParentHash(this.getParentBranch(), this.branch)
 
         def type = getIncrementType()
         def job = script.build(
@@ -132,7 +132,7 @@ class Gitflow {
 
     String getNearestParentHash(String parentBranch, String baseBranch) {
         def result = script.sh(
-                script: "./get_parent_hash.sh ${parentBranch} ${baseBranch}",
+                script: "./get_parent_hash.sh origin/${parentBranch} ${baseBranch}",
                 returnStdout: true)
                 .trim()
 
