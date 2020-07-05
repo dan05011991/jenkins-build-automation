@@ -3,8 +3,8 @@ package models
 class Docker {
     private final def script
     private final Gitflow gitflow
-    private final String developerRepo = 'index.docker.io'
-    private final String releaseRepo = 'index.docker.io'
+    private final String developerRepo
+    private final String releaseRepo
 
     Docker(Map<String, ?> items) {
         this.script = items.get('script')
