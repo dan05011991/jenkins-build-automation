@@ -28,7 +28,7 @@ def call(config) {
             sh "mvn versions:set -DnewVersion=${project_version}-SNAPSHOT"
             sh 'mvn release:update-versions -B'
             sh 'git add pom.xml'
-            sh 'git commit -m "[Automated commit: version bump]"'
+            sh 'git commit -m "[Automated commit: Prepare project for next iteration]"'
         }
     }
 

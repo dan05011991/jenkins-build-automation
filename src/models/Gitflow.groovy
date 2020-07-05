@@ -199,7 +199,7 @@ class Gitflow {
         def lastCommit = script.sh(
                 script: 'git log -1',
                 returnStdout: true)
-        if (lastCommit.contains("[Automated commit: version bump]")) {
+        if (lastCommit.contains("[Automated commit: Prepare project for next iteration]")) {
             return true
         } else {
             return false
