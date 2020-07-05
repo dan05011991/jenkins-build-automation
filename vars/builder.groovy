@@ -33,7 +33,9 @@ def call(Map config=[:], Closure body={}) {
         )
         def docker_helper = new Docker(
                 script: this,
-                gitflow: gitflow)
+                gitflow: gitflow,
+                developerRepo: config.developerRepo,
+                releaseRepo: config.releaseRepo)
 
         stage('Clean') {
 

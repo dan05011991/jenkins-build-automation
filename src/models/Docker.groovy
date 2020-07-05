@@ -7,8 +7,10 @@ class Docker {
     private final String releaseRepo = 'index.docker.io'
 
     Docker(Map<String, ?> items) {
-        this.script = items.get("script")
-        this.gitflow = items.get("gitflow")
+        this.script = items.get('script')
+        this.gitflow = items.get('gitflow')
+        this.developerRepo = items.get('developerRepo')
+        this.releaseRepo = items.get('releaseRepo')
     }
 
     def pushDeveloperImage(image) {
