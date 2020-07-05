@@ -1,9 +1,2 @@
 #!/usr/bin/env bash
-
-git show-branch -a \
-| grep '\*' \
-| grep -v `git rev-parse --abbrev-ref HEAD` \
-| head -n1 \
-| sed 's/.*\[\(.*\)\].*/\1/' \
-| sed 's/[\^~].*//' \
-| xargs -I{} git rev-parse {}
+diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1

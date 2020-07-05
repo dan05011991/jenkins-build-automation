@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-
-git show-branch \
-| sed "s/].*//" \
-| grep "\*" \
-| grep -v "$(git rev-parse --abbrev-ref HEAD)" \
+git show-branch -a \
+| grep '\*' \
+| grep -v `git rev-parse --abbrev-ref HEAD` \
 | head -n1 \
-| sed "s/^.*\[//" \
-| sed "s/\^.*//"
-
+| sed 's/.*\[\(.*\)\].*/\1/' \
+| sed 's/[\^~].*//' \
+| xargs -I{} git rev-parse {}

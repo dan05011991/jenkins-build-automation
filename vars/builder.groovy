@@ -118,6 +118,7 @@ def checkout_step(source_branch, source_url) {
 def create_pipeline_step() {
     return {
         createScript('get_parent_branch.sh')
+        createScript('get_parent_hash.sh')
     }
 }
 

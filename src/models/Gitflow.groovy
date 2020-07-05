@@ -132,13 +132,7 @@ class Gitflow {
 
     String getNearestParentHash(String parentBranch, String baseBranch) {
         def result = script.sh(
-                script: """
-                    git diff --old-line-format='' \
-                    --new-line-format='' \
-                    \<(git rev-list --first-parent ${parentBranch}) \
-                    \<(git rev-list --first-parent ${baseBranch}) \
-                    | head -1
-                """,
+                script: "./get_parent_hash.sh ${parentBranch} ${baseBranch}",
                 returnStdout: true)
                 .trim()
 
