@@ -31,8 +31,6 @@ class IntegrationTests extends BasePipelineTest {
     @Test
     void should_execute_pipeline_successfully_and_follow_docker_in_maven_route() throws Exception {
         //Arrange
-        binding.setVariable("BRANCH_NAME", "feature/test")
-        binding.setVariable("scm", [userRemoteConfigs: [[url: ["test"]]]])
         def script = [
                 sh: {
                     return "1.0.1"
@@ -69,6 +67,94 @@ class IntegrationTests extends BasePipelineTest {
                 '         integration_test.junit(surefire-reports/**/*.xml)',
                 '         integration_test.sh(docker rm -f efe28da0-24ed-4253-a351-467f7587cb71)',
                 '         integration_test.sh(docker rmi efe28da0-24ed-4253-a351-467f7587cb71)'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
+    void should_execute_pipeline_successfully_and_follow_docker_in_maven_route_on_feature_branch() throws Exception {
+        //Arrange
+        def script = [
+                sh: {
+                    return "1.0.1"
+                }
+        ]
+        def gitflow = new Gitflow(
+                script: script,
+                source: 'feature/test',
+                is_pull_request: false
+        )
+        def docker_helper = new Docker(
+                script: script,
+                gitflow: gitflow
+        )
+
+        //Act
+        runScript(pipeline).call(
+                gitflow: gitflow,
+                buildType: 'docker-in-maven',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                testMounts: '-v test:test',
+                docker_helper: docker_helper
+        )
+
+        //Assert
+        assertStringArray([
+                '   integration_test.run()',
+                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=docker-in-maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, docker_helper=models.Docker@00000000})',
+                '      integration_test.stage(Docker In Maven Build, groovy.lang.Closure)',
+                '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
+                '         integration_test.sh(docker run --name 12345678-1234-1234-1234-123456789012 -v test:test 12345678-1234-1234-1234-123456789012)',
+                '         integration_test.sh(docker cp $(docker ps -aqf "name=efe28da0-24ed-4253-a351-467f7587cb71"):/usr/webapp/target/surefire-reports .)',
+                '         integration_test.junit(surefire-reports/**/*.xml)',
+                '         integration_test.sh(docker rm -f efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker rmi efe28da0-24ed-4253-a351-467f7587cb71)',
+                '      integration_test.echo(Pushing intermediate image)'
+        ] as String[], helper.callStack)
+        assertJobStatusSuccess()
+    }
+
+    @Test
+    void should_execute_pipeline_successfully_and_follow_docker_in_maven_route_on_bugfix_branch() throws Exception {
+        //Arrange
+        def script = [
+                sh: {
+                    return "1.0.1"
+                }
+        ]
+        def gitflow = new Gitflow(
+                script: script,
+                source: 'bugfix/test',
+                is_pull_request: false
+        )
+        def docker_helper = new Docker(
+                script: script,
+                gitflow: gitflow
+        )
+
+        //Act
+        runScript(pipeline).call(
+                gitflow: gitflow,
+                buildType: 'docker-in-maven',
+                imageName: 'example_image_name',
+                test: 'test.dockerfile',
+                testMounts: '-v test:test',
+                docker_helper: docker_helper
+        )
+
+        //Assert
+        assertStringArray([
+                '   integration_test.run()',
+                '   integration_test.call({gitflow=models.Gitflow@00000000, buildType=docker-in-maven, imageName=example_image_name, test=test.dockerfile, testMounts=-v test:test, docker_helper=models.Docker@00000000})',
+                '      integration_test.stage(Docker In Maven Build, groovy.lang.Closure)',
+                '         integration_test.sh(docker build -t efe28da0-24ed-4253-a351-467f7587cb71 -f test.dockerfile .)',
+                '         integration_test.sh(docker run --name 12345678-1234-1234-1234-123456789012 -v test:test 12345678-1234-1234-1234-123456789012)',
+                '         integration_test.sh(docker cp $(docker ps -aqf "name=efe28da0-24ed-4253-a351-467f7587cb71"):/usr/webapp/target/surefire-reports .)',
+                '         integration_test.junit(surefire-reports/**/*.xml)',
+                '         integration_test.sh(docker rm -f efe28da0-24ed-4253-a351-467f7587cb71)',
+                '         integration_test.sh(docker rmi efe28da0-24ed-4253-a351-467f7587cb71)',
+                '      integration_test.echo(Pushing intermediate image)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
@@ -254,7 +340,8 @@ class IntegrationTests extends BasePipelineTest {
                 '         integration_test.sh(docker cp $(docker ps -aqf "name=ba3a2bb1-4426-44cb-ae52-1423405e5b21"):/usr/webapp/target/surefire-reports .)',
                 '         integration_test.junit(surefire-reports/**/*.xml)',
                 '         integration_test.sh(docker rm -f ba3a2bb1-4426-44cb-ae52-1423405e5b21)',
-                '         integration_test.sh(docker rmi ba3a2bb1-4426-44cb-ae52-1423405e5b21)'
+                '         integration_test.sh(docker rmi ba3a2bb1-4426-44cb-ae52-1423405e5b21)',
+                '      integration_test.echo(Pushing intermediate image)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }

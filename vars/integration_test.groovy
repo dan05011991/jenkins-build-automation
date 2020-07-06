@@ -79,7 +79,10 @@ def call(config) {
         throw new Exception('Invalid build type specified')
     }
 
-    config.docker_helper.pushDeveloperImage(config.imageName)
+    if(config.gitflow.isIntegrationBranch()) {
+        echo 'Pushing intermediate image'
+        config.docker_helper.pushDeveloperImage(config.imageName)
+    }
 }
 
 return this

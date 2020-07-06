@@ -98,17 +98,17 @@ class Gitflow {
     }
 
     @NonCPS
-    def isPackageBranch(branch = this.source) {
+    def isPackageBranch(String branch = this.source) {
         return isReleaseBranch(branch) || isHotfixBranch(branch)
     }
 
     @NonCPS
-    def isIntegrationBranch(branch = this.source) {
+    def isIntegrationBranch(String branch = this.source) {
         return isFeatureBranch(branch) || isBugfixBranch(branch)
     }
 
     @NonCPS
-    def isMainBranch(branch = this.source) {
+    def isMainBranch(String branch = this.source) {
         return isMasterBranch(branch) || isDevelopBranch(branch)
     }
 
