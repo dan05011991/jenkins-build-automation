@@ -37,8 +37,8 @@ class ReleaseCandidateTests extends BasePipelineTest {
         def docker_helper = new Docker(
                 script: this,
                 gitflow: gitflow,
-                developerRepo: 'index.docker.io',
-                releaseRepo: 'index.docker.io'
+                developerRepo: 'test.docker.io',
+                releaseRepo: 'prod.docker.io'
         )
         //Act
         runScript(pipeline).call(
@@ -55,9 +55,9 @@ class ReleaseCandidateTests extends BasePipelineTest {
                 '   release_candidate.call({buildType=gulp, imageName=example_image_name, test=test.dockerfile, docker_helper=models.Docker@410954b})',
                 '      release_candidate.stage(Re-tag Docker Image, groovy.lang.Closure)',
                 '         release_candidate.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
-                '         release_candidate.sh(docker pull index.docker.io/example_image_name:EXAMPLE_TAG-release-candidate)',
-                '         release_candidate.sh(docker tag index.docker.io/example_image_name:EXAMPLE_TAG-release-candidate index.docker.io/example_image_name:EXAMPLE_TAG)',
-                '         release_candidate.sh(docker push index.docker.io/example_image_name:EXAMPLE_TAG)'
+                '         release_candidate.sh(docker pull test.docker.io/example_image_name:EXAMPLE_TAG-release-candidate)',
+                '         release_candidate.sh(docker tag test.docker.io/example_image_name:EXAMPLE_TAG-release-candidate prod.docker.io/example_image_name:EXAMPLE_TAG)',
+                '         release_candidate.sh(docker push prod.docker.io/example_image_name:EXAMPLE_TAG)'
         ] as String[], helper.callStack)
         assertJobStatusSuccess()
     }
