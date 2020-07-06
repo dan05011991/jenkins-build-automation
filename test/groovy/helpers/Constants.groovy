@@ -1,7 +1,7 @@
 package helpers
 
 class Constants {
-    public static final String bumpCommit = '[Automated commit: version bump]'
+    public static final String bumpCommit = '[Automated commit: Prepare project for next iteration]'
     public static final String[] good_branches = [
             "master",
             "develop",

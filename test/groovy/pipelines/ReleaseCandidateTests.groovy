@@ -36,7 +36,9 @@ class ReleaseCandidateTests extends BasePipelineTest {
         )
         def docker_helper = new Docker(
                 script: this,
-                gitflow: gitflow
+                gitflow: gitflow,
+                developerRepo: 'index.docker.io',
+                releaseRepo: 'index.docker.io'
         )
         //Act
         runScript(pipeline).call(

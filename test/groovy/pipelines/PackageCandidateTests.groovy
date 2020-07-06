@@ -52,7 +52,9 @@ class PackageCandidateTests extends BasePipelineTest {
         )
         def docker = new Docker(
                 script: script,
-                gitflow: gitflow
+                gitflow: gitflow,
+                developerRepo: 'index.docker.io',
+                releaseRepo: 'index.docker.io'
         )
 
         //Act
@@ -80,7 +82,7 @@ class PackageCandidateTests extends BasePipelineTest {
                 '         package_candidate.sh(mvn versions:set -DnewVersion=1.0.0-SNAPSHOT)',
                 '         package_candidate.sh(mvn release:update-versions -B)',
                 '         package_candidate.sh(git add pom.xml)',
-                '         package_candidate.sh(git commit -m "[Automated commit: version bump]")',
+                '         package_candidate.sh(git commit -m "[Automated commit: Prepare project for next iteration]")',
                 '      package_candidate.stage(Push Updates, groovy.lang.Closure)',
                 '         package_candidate.sh(docker push index.docker.io/example_image_name:1.0.0-release-candidate)',
                 '         package_candidate.sshagent({credentials=[ssh]}, groovy.lang.Closure)'
@@ -119,7 +121,9 @@ class PackageCandidateTests extends BasePipelineTest {
         )
         def docker = new Docker(
                 script: script,
-                gitflow: gitflow
+                gitflow: gitflow,
+                developerRepo: 'index.docker.io',
+                releaseRepo: 'index.docker.io'
         )
 
         //Act
@@ -144,7 +148,7 @@ class PackageCandidateTests extends BasePipelineTest {
                 '         package_candidate.sh(mvn versions:set -DnewVersion=1.0.0-SNAPSHOT)',
                 '         package_candidate.sh(mvn release:update-versions -B)',
                 '         package_candidate.sh(git add pom.xml)',
-                '         package_candidate.sh(git commit -m "[Automated commit: version bump]")',
+                '         package_candidate.sh(git commit -m "[Automated commit: Prepare project for next iteration]")',
                 '      package_candidate.stage(Push Updates, groovy.lang.Closure)',
                 '         package_candidate.sh(docker push index.docker.io/example_image_name:1.0.0-release-candidate)',
                 '         package_candidate.sshagent({credentials=[ssh]}, groovy.lang.Closure)',
@@ -183,7 +187,9 @@ class PackageCandidateTests extends BasePipelineTest {
         )
         def docker = new Docker(
                 script: script,
-                gitflow: gitflow
+                gitflow: gitflow,
+                developerRepo: 'index.docker.io',
+                releaseRepo: 'index.docker.io'
         )
 
         //Act
@@ -243,7 +249,9 @@ class PackageCandidateTests extends BasePipelineTest {
         )
         def docker = new Docker(
                 script: script,
-                gitflow: gitflow
+                gitflow: gitflow,
+                developerRepo: 'index.docker.io',
+                releaseRepo: 'index.docker.io'
         )
 
         //Act
