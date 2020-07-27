@@ -77,6 +77,7 @@ class PackageCandidateTests extends BasePipelineTest {
                 '         package_candidate.sh(docker run --name d723f72c-786a-47f8-a218-0128e63fce24 -v test:test d723f72c-786a-47f8-a218-0128e63fce24)',
                 '         package_candidate.sh(docker rm -f d723f72c-786a-47f8-a218-0128e63fce24)',
                 '         package_candidate.sh(docker rmi d723f72c-786a-47f8-a218-0128e63fce24)',
+                '         package_candidate.sh(docker tag index.docker.io/example_image_name:1.0.0 index.docker.io/example_image_name:1.0.0-release-candidate)',
                 '      package_candidate.stage(Prepare project for next iteration, groovy.lang.Closure)',
                 '         package_candidate.sh(git tag -a 1.0.0 -m "Release 1.0.0")',
                 '         package_candidate.sh(mvn versions:set -DnewVersion=development -DprocessAllModules)',

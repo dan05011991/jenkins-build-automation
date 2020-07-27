@@ -16,6 +16,9 @@ def call(config) {
             sh "docker run --name ${unique_Id} ${config.testMounts} ${unique_Id}"
             sh "docker rm -f ${unique_Id}"
             sh "docker rmi ${unique_Id}"
+
+            def image = "${config.docker_helper.developerRepo}/${config.imageName}:${project_version}"
+            sh "docker tag ${image} ${config.docker_helper.developerRepo}/${config.imageName}:${docker_tag_version}"
         } else {
             sh "docker build -t ${config.docker_helper.developerRepo}/${config.imageName}:${docker_tag_version} ."
         }
