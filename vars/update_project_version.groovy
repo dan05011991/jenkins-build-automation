@@ -12,7 +12,7 @@ def call(config) {
 
         if (config.buildType == 'docker-in-maven' || config.buildType == 'maven') {
             stage('Maven Version Update') {
-                sh "mvn versions:set -DnewVersion=${project_version}"
+                sh "mvn versions:set -DnewVersion=${project_version} -DprocessAllModules"
                 sh 'git add pom.xml'
                 sh 'git commit -m "[Automated commit: version bump]"'
             }

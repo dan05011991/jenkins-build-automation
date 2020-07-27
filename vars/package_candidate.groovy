@@ -25,8 +25,7 @@ def call(config) {
         sh "git tag -a ${project_version} -m \"Release ${project_version}\""
 
         if (config.buildType.indexOf('maven') > -1) {
-            sh "mvn versions:set -DnewVersion=development"
-            sh 'mvn release:update-versions -B'
+            sh "mvn versions:set -DnewVersion=development -DprocessAllModules"
             sh 'git add pom.xml'
             sh 'git commit -m "[Automated commit: Prepare project for next iteration]"'
         }

@@ -43,7 +43,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
                 '      update_project_version.stage(Update project version, groovy.lang.Closure)',
                 '         update_project_version.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
                 '         update_project_version.stage(Maven Version Update, groovy.lang.Closure)',
-                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1)',
+                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1 -DprocessAllModules)',
                 '            update_project_version.sh(git add pom.xml)',
                 '            update_project_version.sh(git commit -m "[Automated commit: version bump]")'
         ] as String[], helper.callStack)
@@ -73,7 +73,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
                 '      update_project_version.stage(Update project version, groovy.lang.Closure)',
                 '         update_project_version.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
                 '         update_project_version.stage(Maven Version Update, groovy.lang.Closure)',
-                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1)',
+                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1 -DprocessAllModules)',
                 '            update_project_version.sh(git add pom.xml)',
                 '            update_project_version.sh(git commit -m "[Automated commit: version bump]")'
         ] as String[], helper.callStack)
@@ -165,7 +165,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
                 '      update_project_version.stage(Update project version, groovy.lang.Closure)',
                 '         update_project_version.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
                 '         update_project_version.stage(Maven Version Update, groovy.lang.Closure)',
-                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1)',
+                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1 -DprocessAllModules)',
                 '            update_project_version.sh(git add pom.xml)',
                 '            update_project_version.sh(git commit -m "[Automated commit: version bump]")'
         ] as String[], helper.callStack)
@@ -195,7 +195,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
                 '      update_project_version.stage(Update project version, groovy.lang.Closure)',
                 '         update_project_version.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
                 '         update_project_version.stage(Maven Version Update, groovy.lang.Closure)',
-                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1)',
+                '            update_project_version.sh(mvn versions:set -DnewVersion=1.0.1 -DprocessAllModules)',
                 '            update_project_version.sh(git add pom.xml)',
                 '            update_project_version.sh(git commit -m "[Automated commit: version bump]")'
         ] as String[], helper.callStack)
@@ -287,7 +287,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
                 '      update_project_version.stage(Update project version, groovy.lang.Closure)',
                 '         update_project_version.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
                 '         update_project_version.stage(Maven Version Update, groovy.lang.Closure)',
-                '            update_project_version.sh(mvn versions:set -DnewVersion=feature_test-123-456)',
+                '            update_project_version.sh(mvn versions:set -DnewVersion=feature_test-123-456 -DprocessAllModules)',
                 '            update_project_version.sh(git add pom.xml)',
                 '            update_project_version.sh(git commit -m "[Automated commit: version bump]")'
         ] as String[], helper.callStack)
@@ -317,7 +317,7 @@ class UpdateProjectVersionTests extends BasePipelineTest {
                 '      update_project_version.stage(Update project version, groovy.lang.Closure)',
                 '         update_project_version.sh({script=git describe --tags | sed -n -e "s/\\([0-9]\\)-.*/\\1/ p", returnStdout=true})',
                 '         update_project_version.stage(Maven Version Update, groovy.lang.Closure)',
-                '            update_project_version.sh(mvn versions:set -DnewVersion=feature_test-123-456)',
+                '            update_project_version.sh(mvn versions:set -DnewVersion=feature_test-123-456 -DprocessAllModules)',
                 '            update_project_version.sh(git add pom.xml)',
                 '            update_project_version.sh(git commit -m "[Automated commit: version bump]")'
         ] as String[], helper.callStack)
