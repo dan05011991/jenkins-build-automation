@@ -115,6 +115,13 @@ class VersionManager {
     private Map<String, String> readFile(fileName) {
         def map = [:]
         def file = new File(fileName)
+
+        if(!file.exists()) {
+            map['bugfix'] = '1.0.0'
+            map['release'] = '1.0.0'
+            return map
+        }
+
         def lines = file.readLines()
 
         lines.each { line ->
